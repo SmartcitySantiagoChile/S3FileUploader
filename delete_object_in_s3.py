@@ -11,18 +11,17 @@ sys.path.append(new_path)
 from aws import AWSSession
 
 
-def main():
+def main(argv):
     """
     This script remove an object from S3 bucket.
     """
-
     # Arguments and description
     parser = argparse.ArgumentParser(description='delete an object from S3 bucket')
 
     parser.add_argument('filename', help='filename to delete in bucket')
     parser.add_argument('bucket', default=None, help='bucket name. Valid options are: ')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     # Give names to arguments
     filename = args.filename
@@ -39,8 +38,8 @@ def main():
         print('Object {0} was deleted successfully!'.format(filename))
     except ClientError as e:
         # ignore it and continue uploading files
-        print('Error while file was deleting: {0}'.format(e))
+        print(e)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))

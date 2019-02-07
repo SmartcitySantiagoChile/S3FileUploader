@@ -13,7 +13,7 @@ sys.path.append(new_path)
 from aws import AWSSession
 
 
-def main():
+def main(argv):
     """
     This script will move a file to S3 bucket automatically.
     Check bucket, file name and
@@ -30,7 +30,7 @@ def main():
     parser.add_argument('--replace', action='store_true',
                         help='replace file if exists in bucket, default behavior ask to user')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     # Give names to arguments
     datafiles = args.file
@@ -70,4 +70,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))
