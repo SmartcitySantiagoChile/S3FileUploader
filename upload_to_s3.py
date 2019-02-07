@@ -41,7 +41,8 @@ def main():
     aws_session = AWSSession()
 
     if not aws_session.check_bucket_exists(bucket_name):
-        raise ValueError('Bucket \'{0}\' does not exist'.format(bucket_name))
+        print('Bucket \'{0}\' does not exist'.format(bucket_name))
+        exit(1)
 
     for datafile in datafiles:
         matched_files = glob.glob(datafile)
@@ -52,16 +53,17 @@ def main():
                 try:
                     return datetime.strptime(filename_date_part, "%Y-%m-%d")
                 except ValueError:
-                    print('{0} does not have a valid format name'.format(matched_file))
+                    print('\'{0}\' does not have a valid format name'.format(filename))
                     continue
-            print('uploading file {0}'.format(matched_file))
+            print('{0}: uploading file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
             try:
                 if not replace and aws_session.check_file_exists(bucket_name, filename):
-                    answer = input('file \'{0}\' exists in bucket. Do you want to replace it? (y/n): ')
+                    answer = input('file \'{0}\' exists in bucket. Do you want to replace it? (y/n): '.format(filename))
                     if answer not in ['y', 'Y']:
                         print('file {0} was not replaced'.format(filename))
                         continue
                 aws_session.send_file_to_bucket(matched_file, filename, bucket_name)
+                print('{0}: finished load of file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
             except ClientError as e:
                 # ignore it and continue uploading files
                 print('Error while file was uploading: {0}'.format(e))

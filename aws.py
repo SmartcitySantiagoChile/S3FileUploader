@@ -72,7 +72,7 @@ class AWSSession:
             return True
 
     def _build_url(self, key, bucket_name):
-        return ''.join(['https://s3.amazonaws.com/', bucket_name, '/', urllib.quote(key)])
+        return ''.join(['https://s3.amazonaws.com/', bucket_name, '/', urllib.parse.quote(key)])
 
     def send_file_to_bucket(self, file_path, file_key, bucket_name):
         s3 = self.session.resource('s3')
@@ -92,4 +92,5 @@ class AWSSession:
     def delete_object_in_bucket(self, obj_key, bucket_name):
         s3 = self.session.resource('s3')
         obj = s3.Object(bucket_name, obj_key)
-        obj.delete()
+
+        return obj.delete()
