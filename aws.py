@@ -88,3 +88,8 @@ class AWSSession:
         s3.Object(bucket_name, obj_key).Acl().put(ACL='public-read')
 
         return self._build_url(obj_key, bucket_name)
+
+    def delete_object_in_bucket(self, obj_key, bucket_name):
+        s3 = self.session.resource('s3')
+        obj = s3.Object(bucket_name, obj_key)
+        obj.delete()
