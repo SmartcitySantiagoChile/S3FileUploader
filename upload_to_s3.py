@@ -1,9 +1,14 @@
 import argparse
 import glob
 import os
+import sys
 from datetime import datetime
 
 from botocore.exceptions import ClientError
+
+# add path so we can use function through command line
+new_path = os.path.join(os.path.dirname(__file__), '..', '..')
+sys.path.append(new_path)
 
 from aws import AWSSession
 
@@ -17,11 +22,11 @@ def main():
     # Arguments and description
     parser = argparse.ArgumentParser(description='move document to S3 bucket')
 
-    parser.add_argument('file', nargs='*',
+    parser.add_argument('file', nargs='+',
                         help='data file path. It can be a pattern, e.g. /path/to/file or /path/to/file*.zip')
-    parser.add_argument('bucket', default=None, help='bucket name. It can be: ')
+    parser.add_argument('bucket', default=None, help='bucket name. Valid options are: ')
     parser.add_argument('--omit-filename-check', action='store_true',
-                        help='omit test if filename has format YYYY-mm-dd.*')
+                        help='It Accepts filenames with distinct format to YYYY-mm-dd.*')
     parser.add_argument('--replace', action='store_true',
                         help='replace file if exists in bucket, default behavior ask to user')
 
