@@ -34,7 +34,7 @@ AWS_SECRET_ACCESS_KEY='PUT_HERE_YOUR_SECRET_ACCESS_KEY'
 Para comprobar que todo está en orden puede ejecutar los tests.
  
 ```
-python -m tests.test
+python -m unittest discover
 ```
  
  # Ejecutar programa

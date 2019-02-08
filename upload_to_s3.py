@@ -51,7 +51,7 @@ def main(argv):
             if not omit_filename_check:
                 filename_date_part = filename.split('.')[0]
                 try:
-                    return datetime.strptime(filename_date_part, "%Y-%m-%d")
+                    datetime.strptime(filename_date_part, "%Y-%m-%d")
                 except ValueError:
                     print('\'{0}\' does not have a valid format name'.format(filename))
                     continue
@@ -66,7 +66,7 @@ def main(argv):
                 print('{0}: finished load of file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
             except ClientError as e:
                 # ignore it and continue uploading files
-                print('Error while file was uploading: {0}'.format(e))
+                print(e)
 
 
 if __name__ == "__main__":
