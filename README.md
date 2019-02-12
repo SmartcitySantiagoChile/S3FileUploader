@@ -13,17 +13,17 @@ Se recomienda la utilización de un entorno virtual, puedes crearlo dentro de la
 virtualenv venv
 ```
 
-Luego se debe activar e instalar las dependencias.
+Luego se debe activar el entorno virtual e instalar las dependencias.
  
 ```
 # activar
 source venv/bin/activate
  
 # intalar dependencias
-pip intall -r requirements.txt
+pip install -r requirements.txt
 ```
 
-El siguiente paso es generar el archivo que almacenará las llaves de acceso a aws. Este archivo debe llamarse `.env` y en su contenido es el siguiente:
+El siguiente paso es generar el archivo que almacenará las llaves de acceso a aws. Este archivo debe llamarse `.env` y su contenido es el siguiente:
 ```
 AWS_ACCESS_KEY_ID='PUT_HERE_YOUR_ACCESS_KEY'
 AWS_SECRET_ACCESS_KEY='PUT_HERE_YOUR_SECRET_ACCESS_KEY'
@@ -39,7 +39,7 @@ python -m unittest discover
  
  # Ejecutar programa
  
- Existen dos comandos presentes: `upload_to_s3.py` y `delete_object_in_s3.py`. El primero sube uno o más archivos a un bucket en S3 y el segundo permite eliminar un objecto en s3.
+ Existen dos comandos: `upload_to_s3.py` y `delete_object_in_s3.py`. El primero sube uno o más archivos a un bucket en S3 y el segundo permite eliminar un objecto (archivo) en s3.
  
  ## Ejemplo de ejecución
  
@@ -66,10 +66,10 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --omit-filename-check It Accepts filenames with distinct format to YYYY-mm-dd.*
-  --replace             replace file if exists in bucket, default behavior ask to user
+  --replace             It replaces file if exists in bucket, default behavior ask to user a confirmation
 ```
   
- ### Comando delete_object_in_s3.py  
+ ### Comando delete_object_in_s3.py
 ```
 python delete_object_in_s3.py nombre_archivo nombre_bucket
 ```

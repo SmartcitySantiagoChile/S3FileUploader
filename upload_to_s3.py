@@ -28,7 +28,7 @@ def main(argv):
     parser.add_argument('--omit-filename-check', action='store_true',
                         help='It Accepts filenames with distinct format to YYYY-mm-dd.*')
     parser.add_argument('--replace', action='store_true',
-                        help='replace file if exists in bucket, default behavior ask to user')
+                        help='It replaces file if exists in bucket, default behavior ask to user a confirmation')
 
     args = parser.parse_args(argv[1:])
 
