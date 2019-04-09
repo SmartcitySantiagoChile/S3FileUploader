@@ -4,6 +4,10 @@ El objetivo de este programa es enviar archivos almacenados en la máquina local
 
 Es importante destacar que para que funcione el envío, las credenciales dadas a boto3 (librería cliente de aws) deben tener permisos de escritura.
 
+# Requisitos
+
+- Python 3
+- dependencias (mirar archivo `requirements.txt`)
 
 # Instalación
 
