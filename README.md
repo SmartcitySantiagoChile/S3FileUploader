@@ -17,6 +17,13 @@ Se recomienda la utilización de un entorno virtual, puedes crearlo dentro de la
 virtualenv venv
 ```
 
+En caso de tener python 2.7 por defecto es necesario definir que sea python3 para el entorno virtual
+
+```
+virtualenv -p python3 envname
+```
+
+
 Luego se debe activar el entorno virtual e instalar las dependencias.
  
 ```
