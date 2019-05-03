@@ -20,7 +20,7 @@ virtualenv venv
 En caso de tener python 2.7 por defecto es necesario definir que sea python3 para el entorno virtual
 
 ```
-virtualenv -p python3 envname
+virtualenv -p python3 venv
 ```
 
 
