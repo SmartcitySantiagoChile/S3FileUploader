@@ -9,9 +9,6 @@ class AWSSession:
     """
     Class to interact wit Amazon Web Service (AWS) API through boto3 library
     """
-    GPS_BUCKET_NAME = 'adatrap-gps'
-    OP_PROGRAM_BUCKET_NAME = 'adatrap-opprogram'
-    TRIP_BUCKET_NAME = 'adatrap-trip'
 
     def __init__(self):
 
@@ -30,17 +27,6 @@ class AWSSession:
             obj_list.append(dict(name=obj.key, size=size_in_mb, last_modified=obj.last_modified, url=url))
 
         return obj_list
-
-    def get_available_days(self, bucket_name):
-        s3 = self.session.resource('s3')
-        bucket = s3.Bucket(bucket_name)
-
-        days = []
-        for obj in bucket.objects.all():
-            date = obj.key.split('.')[0]
-            days.append(date)
-
-        return days
 
     def check_bucket_exists(self, bucket_name):
         s3 = self.session.resource('s3')
@@ -94,3 +80,8 @@ class AWSSession:
         obj = s3.Object(bucket_name, obj_key)
 
         return obj.delete()
+
+    def download_object_from_bucket(self, obj_key, bucket_name, file_path):
+        s3 = self.session.resource('s3')
+        bucket = s3.Bucket(bucket_name)
+        bucket.download_file(obj_key, file_path)

@@ -30,7 +30,7 @@ Luego se debe activar el entorno virtual e instalar las dependencias.
 # activar
 source venv/bin/activate
  
-# intalar dependencias
+# instalar dependencias
 pip install -r requirements.txt
 ```
 
@@ -101,5 +101,35 @@ positional arguments:
 
 optional arguments:
   -h, --help  show this help message and exit
+```
+ 
+
+ ### Comando download_from_s3.py
+```
+python download_from_s3.py nombre_archivo nombre_bucket --destination-path /home/user
+```
+  El primer parámetro es el nombre del archivo a descargar, el segundo corresponde al nombre del bucket en que se 
+  encuentra el archivo, y por último, existe un parámetro opcional que permite definir la ruta donde se guardará el archivo
+  
+ #### Ayuda
+```
+# consultar ayuda
+python download_from_s3.py --help
+ 
+usage: download_from_s3.py [-h] [--destination-path DESTINATION_PATH]
+                           filename [filename ...] bucket
+
+download one or more objects from S3 bucket
+
+positional arguments:
+  filename              one or more filenames
+  bucket                bucket name
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --destination-path DESTINATION_PATH
+                        path where files will be saved, if it is not provided
+                        we will use current path
+
 ```
  
