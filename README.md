@@ -109,7 +109,8 @@ optional arguments:
 python download_from_s3.py nombre_archivo nombre_bucket --destination-path /home/user
 ```
   El primer parámetro es el nombre del archivo a descargar, el segundo corresponde al nombre del bucket en que se 
-  encuentra el archivo, y por último, existe un parámetro opcional que permite definir la ruta donde se guardará el archivo
+  encuentra el archivo, y por último, existe un parámetro opcional que permite definir la ruta donde se guardará el 
+  archivo, si es omitido el archivo será guardado en el `current working directory` (dado por `os.getcwd()`)
   
  #### Ayuda
 ```
