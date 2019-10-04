@@ -46,6 +46,10 @@ def main(argv):
 
     for datafile in datafiles:
         matched_files = glob.glob(datafile)
+        if len(matched_files) == 0:
+            print('path "{0}" does not match with any file'.format(datafile))
+            continue
+
         for matched_file in matched_files:
             filename = matched_file.split(os.sep)[-1]
             if not omit_filename_check:
