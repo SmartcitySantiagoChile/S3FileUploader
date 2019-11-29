@@ -29,6 +29,8 @@ def main(argv):
                         help='It Accepts filenames with distinct format to YYYY-mm-dd.*')
     parser.add_argument('--replace', action='store_true',
                         help='It replaces file if exists in bucket, default behavior ask to user a confirmation')
+    parser.add_argument('--ignore-if-exists', action='store_true',
+                        help='It does not upload file if already exist in the bucket')
 
     args = parser.parse_args(argv[1:])
 
@@ -37,13 +39,23 @@ def main(argv):
     bucket_name = args.bucket
     omit_filename_check = args.omit_filename_check
     replace = args.replace
+    ignore_if_exists = args.ignore_if_exists
 
     aws_session = AWSSession()
 
+    if replace and ignore_if_exists:
+        print('replace and ignore-if-exists options are incompatible')
+        exit(1)
+    
     if not aws_session.check_bucket_exists(bucket_name):
         print('Bucket \'{0}\' does not exist'.format(bucket_name))
         exit(1)
-
+    
+    def send_file_to_s3(matched_file, filename):
+        print('{0}: uploading file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
+        aws_session.send_file_to_bucket(matched_file, filename, bucket_name)
+        print('{0}: finished load of file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
+        
     for datafile in datafiles:
         matched_files = glob.glob(datafile)
         if len(matched_files) == 0:
@@ -59,15 +71,23 @@ def main(argv):
                 except ValueError:
                     print('\'{0}\' does not have a valid format name'.format(filename))
                     continue
-            print('{0}: uploading file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
+
             try:
-                if not replace and aws_session.check_file_exists(bucket_name, filename):
+                file_exists = aws_session.check_file_exists(bucket_name, filename)
+                if not file_exists:
+                    send_file_to_s3(matched_file, filename)
+                    continue
+
+                if replace:
+                    send_file_to_s3(matched_file, filename)
+                elif ignore_if_exists:
+                    continue
+                else:
                     answer = input('file \'{0}\' exists in bucket. Do you want to replace it? (y/n): '.format(filename))
                     if answer not in ['y', 'Y']:
                         print('file {0} was not replaced'.format(filename))
                         continue
-                aws_session.send_file_to_bucket(matched_file, filename, bucket_name)
-                print('{0}: finished load of file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
+                    send_file_to_s3(matched_file, filename)
             except ClientError as e:
                 # ignore it and continue uploading files
                 print(e)
