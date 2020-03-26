@@ -6,8 +6,8 @@ from unittest import TestCase, mock
 from botocore.exceptions import ClientError
 
 from delete_object_in_s3 import main as delete_main
-from upload_to_s3 import main as upload_main
 from download_from_s3 import main as download_main
+from upload_to_s3 import main as upload_main
 
 
 class DeleteObjectTest(TestCase):
@@ -226,7 +226,7 @@ class UploadObjectTest(TestCase):
     @mock.patch('upload_to_s3.AWSSession')
     @mock.patch('upload_to_s3.glob')
     def test_move_file_to_bucket_but_file_exists_and_it_is_not_replaced(self, glob_mock, aws_session_mock, input_mock):
-        """  move file to bucket, filename has ok format but file exists, we answer not to replace question """
+        """  move file to bucket, filename has ok format but file exists, we answer "not" to replace question """
         filename = '2018-01-01.txt'
         filepath = os.path.join(__file__, filename)
         bucket_name = 'aarrrp'
@@ -241,7 +241,6 @@ class UploadObjectTest(TestCase):
         f = io.StringIO()
         with redirect_stdout(f):
             upload_main([self.command_name, filepath, bucket_name])
-        self.assertIn('uploading file ', f.getvalue())
         self.assertIn('file {0} was not replaced'.format(filename), f.getvalue())
         self.assertNotIn('finished load of file', f.getvalue())
 
