@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/SmartcitySantiagoChile/S3FileUploader.svg?branch=master)](https://travis-ci.com/SmartcitySantiagoChile/S3FileUploader)
 # Mini programa para subir archivos a un bucket S3
 
 El objetivo de este programa es enviar archivos almacenados en la máquina local a un bucket en el servicio S3 de AWS.
