@@ -1,11 +1,12 @@
 [![Build Status](https://travis-ci.com/SmartcitySantiagoChile/S3FileUploader.svg?branch=master)](https://travis-ci.com/SmartcitySantiagoChile/S3FileUploader)
+[![Coverage Status](https://coveralls.io/repos/github/SmartcitySantiagoChile/S3FileUploader/badge.svg?branch=master)](https://coveralls.io/github/SmartcitySantiagoChile/S3FileUploader?branch=master)
 # Mini programa para subir archivos a un bucket S3
 
 El objetivo de este programa es enviar archivos almacenados en la máquina local a un bucket en el servicio S3 de AWS.
 
 Es importante destacar que para que funcione el envío, las credenciales dadas a boto3 (librería cliente de aws) deben tener permisos de escritura.
 
-# Requisitos
+# Requisitos    
 
 - Python 3
 - dependencias (mirar archivo `requirements.txt`)
