@@ -87,7 +87,14 @@ class AWSSession:
         bucket = s3.Bucket(bucket_name)
         bucket.download_file(obj_key, file_path)
 
-    def copy_files_from_bucket_to_bucket(self, source_bucket_name, target_bucket_name, file_name):
+    def copy_file_from_bucket_to_bucket(self, source_bucket_name, target_bucket_name, file_name) -> None:
+        """
+        Copy file from source bucket to target bucket
+        Args:
+            source_bucket_name: source bucket
+            target_bucket_name: target bucket
+            file_name: file name
+        """
         s3 = self.session.resource('s3')
         target_bucket = s3.Bucket(target_bucket_name)
         copy_source = {
@@ -96,20 +103,33 @@ class AWSSession:
         }
         target_bucket.copy(copy_source, file_name)
 
-    def move_files_from_bucket_to_bucket(self, source_bucket_name, target_bucket_name, datafiles):
+    def move_files_from_bucket_to_bucket(self, source_bucket_name: str, target_bucket_name: str, datafiles: list,
+                                         extension_list: list) -> None:
+        """
+        Move files from source bucket to target bucket
+        Args:
+            source_bucket_name: source bucket
+            target_bucket_name: target bucket
+            datafiles: list of files to move (optional)
+            extension_list: list of extension filter (op)
+        """
         s3 = self.session.resource('s3')
         source_bucket = s3.Bucket(source_bucket_name)
 
         if not datafiles:
-            # Iterate All Objects in Your S3 Bucket Over the for Loop
-            for file in source_bucket.objects.all():
-                self.copy_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file.key)
-                self.delete_object_in_bucket(file.key, source_bucket_name)
-                print(f"{file.key} moved from {source_bucket_name} to {target_bucket_name}")
+            datafiles = [obj.key for obj in source_bucket.objects.all()]
+            if extension_list:
+                datafiles = filter_by_extension(datafiles, extension_list)
+            for file in datafiles:
+                self.copy_file_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file)
+                self.delete_object_in_bucket(file, source_bucket_name)
+                print(f"{file} moved from {source_bucket_name} to {target_bucket_name}")
         else:
+            if extension_list:
+                datafiles = filter_by_extension(datafiles, extension_list)
             for file_name in datafiles:
                 if self.check_file_exists(source_bucket_name, file_name):
-                    self.copy_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file_name)
+                    self.copy_file_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file_name)
                     self.delete_object_in_bucket(file_name, source_bucket_name)
                     print(f"{file_name} moved from {source_bucket_name} to {target_bucket_name}")
                 else:
