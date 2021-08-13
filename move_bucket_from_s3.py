@@ -21,15 +21,16 @@ def main(argv):
 
     parser.add_argument('source_bucket', help='source bucket name')
     parser.add_argument('target_bucket', help='target bucket name')
-    parser.add_argument('filename',  default=None, nargs='?', help='one or more filenames')
-    parser.add_argument('extension_filter', default=None, help='only files with this extension will be moved')
+    parser.add_argument('-f', '--filename', dest='filename', default=None, nargs='*', help='one or more filenames')
+    parser.add_argument('-e', dest='extension_filter', default=None, nargs='*',
+                        help='only files with this extension will be moved')
 
     args = parser.parse_args(argv[1:])
 
     # Give names to arguments
     source_bucket_name = args.source_bucket
     target_bucket_name = args.target_bucket
-    datafiles = args.filename if args.filename else None
+    datafiles = args.filename
     extension = args.extension_filter
 
     aws_session = AWSSession()
