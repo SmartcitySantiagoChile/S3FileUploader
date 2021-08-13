@@ -139,3 +139,34 @@ class AwsTest(TestCase):
         self.aws_session.session.client = mock.MagicMock(return_value=client)
         self.aws_session.delete_object_in_bucket = mock.MagicMock()
         self.aws_session.delete_bucket('bucket_name')
+
+    def test_move_files_from_bucket_to_bucket(self):
+        # all files case
+        source_bucket_name = 'source'
+        target_bucket_name = 'target'
+        datafiles = []
+        extension_list = ['.trip']
+        file_list = [mock.MagicMock(key='2020-01-01.trip.gz')]
+        object_bucket = mock.MagicMock(all=mock.MagicMock(return_value=file_list))
+        bucket = mock.MagicMock()
+        bucket.Bucket.return_value = mock.MagicMock(objects=object_bucket)
+        self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
+        self.aws_session.copy_file_from_bucket_to_bucket= mock.MagicMock()
+        self.aws_session.delete_object_in_bucket = mock.MagicMock()
+        self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
+                                                          extension_list)
+        # one file case
+        datafiles = ['2020-01-01.trip.gz']
+        object_bucket = mock.MagicMock(all=mock.MagicMock(return_value=file_list))
+        bucket = mock.MagicMock()
+        bucket.Bucket.return_value = mock.MagicMock(objects=object_bucket)
+        self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
+        self.aws_session.copy_file_from_bucket_to_bucket = mock.MagicMock()
+        self.aws_session.delete_object_in_bucket = mock.MagicMock()
+        self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
+                                                          extension_list)
+
+        # one file does not exist case
+        self.aws_session.check_file_exists = mock.MagicMock(return_value = False)
+        self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
+                                                          extension_list)
