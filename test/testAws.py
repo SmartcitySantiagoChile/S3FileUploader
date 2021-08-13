@@ -107,3 +107,24 @@ class AwsTest(TestCase):
         bucket.Bucket.return_value = bucket
         self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
         self.aws_session.download_object_from_bucket('key', 'name', 'path')
+
+    def test_copy_files_from_bucket_to_bucket(self):
+        target_bucket = mock.MagicMock(copy=mock.MagicMock())
+        target_bucket.Bucket.return_value = target_bucket
+        self.aws_session.session.resource = mock.MagicMock(return_value=target_bucket)
+        self.aws_session.copy_files_from_bucket_to_bucket('source_bucket', 'target_bucket', 'file_name')
+
+    def test_filter_by_extension(self):
+        file_list = ['2020-01-01.trip.gz', '2020-01-01.viajes.gz']
+        expected_list = ['2020-01-01.trip.gz']
+        extension = ['.trip']
+        self.assertEqual(expected_list, aws.filter_by_extension(file_list, extension))
+
+        file_list = ['2020-01-01.trip.gz', '2020-01-01.viajes.gz']
+        extension = ['.trip', '.viajes']
+        self.assertEqual(file_list, aws.filter_by_extension(file_list, extension))
+
+        file_list = ['2020-01-01.trip.gz', '2020-01-01.viajes.gz', '2020-01-01.trip', '2020-01-01.viajes']
+        expected_list = ['2020-01-01.trip.gz', '2020-01-01.trip']
+        extension = ['.trip']
+        self.assertEqual(expected_list, aws.filter_by_extension(file_list, extension))

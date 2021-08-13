@@ -1,3 +1,4 @@
+import pathlib
 import urllib
 
 import boto3
@@ -85,3 +86,60 @@ class AWSSession:
         s3 = self.session.resource('s3')
         bucket = s3.Bucket(bucket_name)
         bucket.download_file(obj_key, file_path)
+
+    def copy_files_from_bucket_to_bucket(self, source_bucket_name, target_bucket_name, file_name):
+        s3 = self.session.resource('s3')
+        target_bucket = s3.Bucket(target_bucket_name)
+        copy_source = {
+            'Bucket': source_bucket_name,
+            'Key': file_name
+        }
+        target_bucket.copy(copy_source, file_name)
+
+    def move_files_from_bucket_to_bucket(self, source_bucket_name, target_bucket_name, datafiles):
+        s3 = self.session.resource('s3')
+        source_bucket = s3.Bucket(source_bucket_name)
+
+        if not datafiles:
+            # Iterate All Objects in Your S3 Bucket Over the for Loop
+            for file in source_bucket.objects.all():
+                self.copy_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file.key)
+                self.delete_object_in_bucket(file.key, source_bucket_name)
+                print(f"{file.key} moved from {source_bucket_name} to {target_bucket_name}")
+        else:
+            for file_name in datafiles:
+                if self.check_file_exists(source_bucket_name, file_name):
+                    self.copy_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file_name)
+                    self.delete_object_in_bucket(file_name, source_bucket_name)
+                    print(f"{file_name} moved from {source_bucket_name} to {target_bucket_name}")
+                else:
+                    print(f"{file_name} does not exist in {source_bucket_name}")
+
+    def delete_bucket(self, bucket_name: str) -> None:
+        """
+        Delete bucket with all files
+        Args:
+            bucket_name: name of bucket to delete
+        """
+        s3 = self.session.resource('s3')
+        client = self.session.client('s3')
+        bucket = s3.Bucket(bucket_name)
+        for file in bucket.objects.all():
+            self.delete_object_in_bucket(file.key, bucket_name)
+            print(f"{file.key} deleted")
+
+        client.delete_bucket(Bucket=bucket_name)
+        print(f"{bucket_name} deleted")
+
+
+def filter_by_extension(file_list: list, extension_list: list) -> list:
+    """
+    Filter file_list returning only extension_list
+    Args:
+        file_list: list with filenames
+        extension_list: list with extensions
+
+    Returns:
+        list: filtered list
+    """
+    return [file for file in file_list if any(ext in pathlib.Path(file).suffixes for ext in extension_list)]
