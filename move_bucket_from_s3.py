@@ -22,7 +22,7 @@ def main(argv):
     parser.add_argument('source_bucket', help='source bucket name')
     parser.add_argument('target_bucket', help='target bucket name')
     parser.add_argument('-f', '--filename', dest='filename', default=None, nargs='*', help='one or more filenames')
-    parser.add_argument('-e', dest='extension_filter', default=None, nargs='*',
+    parser.add_argument('-e', '--extension', dest='extension_filter', default=None, nargs='*',
                         help='only files with this extension will be moved')
 
     args = parser.parse_args(argv[1:])

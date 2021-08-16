@@ -113,7 +113,7 @@ python download_from_s3.py nombre_archivo nombre_bucket --destination-path /home
   El primer parámetro es el nombre del archivo a descargar, el segundo corresponde al nombre del bucket en que se 
   encuentra el archivo, y por último, existe un parámetro opcional que permite definir la ruta donde se guardará el 
   archivo, si es omitido el archivo será guardado en el `current working directory` (dado por `os.getcwd()`)
-  
+
  #### Ayuda
 ```
 # consultar ayuda
@@ -133,6 +133,55 @@ optional arguments:
   --destination-path DESTINATION_PATH
                         path where files will be saved, if it is not provided
                         we will use current path
+
+```
+### Comando delete_bucket_from_s3.py
+```
+python delete_bucket_from_s3.py nombre_bucket
+```
+El parámetro es el nombre del bucket a eliminar. Este comando eliminará el bucket junto a todos sus archivos
+
+```
+usage: delete_bucket_from_s3.py [-h] bucket_name
+
+delete S3 bucket
+
+positional arguments:
+  bucket_name  bucket name
+
+optional arguments:
+  -h, --help   show this help message and exit
+```
+
+### Comando move_bucket_from_s3.py
+```
+python move_bucket_from_s3.py bucket_origen bucket_destino --filename nombre_archivo --extension filtro_de_extensiones
+```
+
+El primer parámetros es el bucket desde donde se copiarán los archivos. El segundo comando es el bucket al que se copiarán los archivos.
+El parámetro opcional nombre_archivo es para solo mover uno o más archivos según nombre de archivo. El último parámetro opcional, 
+filtro_de_extensiones, permite mover los archivos que solo contengan las extensiones indicadas. Ej: .viajes
+
+
+ #### Ayuda
+```
+# consultar ayuda
+usage: move_bucket_from_s3.py [-h] [-f [FILENAME [FILENAME ...]]] [-e [EXTENSION_FILTER [EXTENSION_FILTER ...]]]
+                              source_bucket target_bucket
+
+move one or more objects from source S3 bucket to target S3 bucket
+
+positional arguments:
+  source_bucket         source bucket name
+  target_bucket         target bucket name
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f [FILENAME [FILENAME ...]], --filename [FILENAME [FILENAME ...]]
+                        one or more filenames
+  -e [EXTENSION_FILTER [EXTENSION_FILTER ...]], --extension [EXTENSION_FILTER [EXTENSION_FILTER ...]]
+                        only files with this extension will be moved
+
 
 ```
  
