@@ -163,3 +163,4 @@ def filter_by_extension(file_list: list, extension_list: list) -> list:
         list: filtered list
     """
     return [file for file in file_list if any(ext in pathlib.Path(file).suffixes for ext in extension_list)]
+

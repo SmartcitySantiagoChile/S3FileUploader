@@ -5,8 +5,10 @@ from unittest import TestCase, mock
 
 from botocore.exceptions import ClientError
 
+from delete_bucket_from_s3 import main as delete_bucket_main
 from delete_object_in_s3 import main as delete_main
 from download_from_s3 import main as download_main
+from move_bucket_from_s3 import main as move_bucket_main
 from upload_to_s3 import main as upload_main
 
 
@@ -358,3 +360,92 @@ class DownloadObjectTest(TestCase):
 
         aws_session_mock.return_value.download_object_from_bucket.assert_called_once()
         aws_session_mock.return_value.download_object_from_bucket.assert_called_with(filename, bucket_name, filename)
+
+
+class DeleteBucketTest(TestCase):
+    def setUp(self):
+        self.command_name = 'move_bucket_from_s3'
+
+    def test_without_params(self):
+        with self.assertRaises(SystemExit):
+            move_bucket_main([self.command_name])
+
+    @mock.patch('delete_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_with_bucket_does_not_exist(self, check_bucket_exist):
+        check_bucket_exist.return_value = False
+        source = 'source'
+        with self.assertRaises(SystemExit):
+            delete_bucket_main([self.command_name, source])
+
+    @mock.patch('delete_bucket_from_s3.AWSSession')
+    def test_bucket_raise_error_when_is_deleting(self, aws_session_mock):
+        operation_name = 'deleting'
+        error_response = dict(Error=dict(Code=403, Message='forbidden'))
+        aws_session_mock.return_value.check_bucket_exists.return_value = True
+        aws_session_mock.return_value.delete_bucket.side_effect = ClientError(error_response,
+                                                                              operation_name)
+
+        bucket_name = 'void_bucket'
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            delete_bucket_main([self.command_name, bucket_name])
+
+        expected_answer = 'An error occurred ({0}) when calling the deleting operation: {1}'.format(
+            error_response['Error']['Code'], error_response['Error']['Message'])
+        self.assertIn(expected_answer, f.getvalue())
+
+        aws_session_mock.return_value.delete_bucket.assert_called_once()
+        aws_session_mock.return_value.delete_bucket.assert_called_with(bucket_name)
+
+
+class MoveBucketTest(TestCase):
+    def setUp(self):
+        self.command_name = 'move_bucket_from_s3'
+
+    def test_without_params(self):
+        with self.assertRaises(SystemExit):
+            move_bucket_main([self.command_name])
+
+    def test_with_one_param(self):
+        source_bucket = 'source'
+        with self.assertRaises(SystemExit):
+            move_bucket_main([self.command_name, source_bucket])
+
+    @mock.patch('move_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_with_bucket_does_not_exist(self, check_bucket_exist):
+        check_bucket_exist.return_value = False
+        source = 'source'
+        target = 'target'
+        with self.assertRaises(SystemExit):
+            move_bucket_main([self.command_name, source, target])
+
+    @mock.patch('move_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_with_target_bucket_does_not_exist(self, check_bucket_exist):
+        check_bucket_exist.side_effect = [True, False]
+        source = 'source'
+        target = 'target'
+        with self.assertRaises(SystemExit):
+            move_bucket_main([self.command_name, source, target])
+
+    @mock.patch('move_bucket_from_s3.AWSSession')
+    def test_bucket_raise_error_when_is_moving(self, aws_session_mock):
+        operation_name = 'moving'
+        error_response = dict(Error=dict(Code=403, Message='forbidden'))
+        aws_session_mock.return_value.check_bucket_exists.return_value = [True, True]
+        aws_session_mock.return_value.move_files_from_bucket_to_bucket.side_effect = ClientError(error_response,
+                                                                                                 operation_name)
+
+        source = 'source'
+        target = 'target'
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            move_bucket_main([self.command_name, source, target])
+
+        expected_answer = 'An error occurred ({0}) when calling the moving operation: {1}'.format(
+            error_response['Error']['Code'], error_response['Error']['Message'])
+        self.assertIn(expected_answer, f.getvalue())
+
+        aws_session_mock.return_value.move_files_from_bucket_to_bucket.assert_called_once()
+        aws_session_mock.return_value.move_files_from_bucket_to_bucket.assert_called_with(source, target, None, None)
