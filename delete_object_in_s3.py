@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 
@@ -28,17 +29,19 @@ def main(argv):
     bucket_name = args.bucket
 
     aws_session = AWSSession()
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
 
     if not aws_session.check_bucket_exists(bucket_name):
-        print('Bucket \'{0}\' does not exist'.format(bucket_name))
+        logger.info(f"Bucket {bucket_name} does not exist")
         exit(1)
 
     try:
         aws_session.delete_object_in_bucket(filename, bucket_name)
-        print('Object {0} was deleted successfully!'.format(filename))
+        logger.info(f"Object {filename} was deleted successfully!")
     except ClientError as e:
         # ignore it and continue uploading files
-        print(e)
+        logger.error(e)
 
 
 if __name__ == "__main__":

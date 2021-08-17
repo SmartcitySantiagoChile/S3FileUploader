@@ -35,12 +35,12 @@ class DeleteObjectTest(TestCase):
         filename = 'aaa.txt'
         bucket_name = 'aarrrp'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('delete_object_in_s3', level='INFO') as f:
             with self.assertRaises(SystemExit):
                 delete_main([self.command_name, filename, bucket_name])
 
-        self.assertIn('Bucket \'{0}\' does not exist'.format(bucket_name), f.getvalue())
+        expected_answer = 'INFO:delete_object_in_s3:Bucket aarrrp does not exist'
+        self.assertIn(expected_answer, f.output)
 
     @mock.patch('delete_object_in_s3.AWSSession')
     def test_bucket_is_deleted(self, aws_session_mock):
@@ -51,11 +51,11 @@ class DeleteObjectTest(TestCase):
         filename = 'aaa.txt'
         bucket_name = 'aarrrp'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('delete_object_in_s3', level='INFO') as f:
             delete_main([self.command_name, filename, bucket_name])
 
-        self.assertIn('Object {0} was deleted successfully!'.format(filename), f.getvalue())
+        expected_answer = 'INFO:delete_object_in_s3:Object aaa.txt was deleted successfully!'
+        self.assertIn(expected_answer, f.output)
 
         aws_session_mock.return_value.delete_object_in_bucket.assert_called_once()
         aws_session_mock.return_value.delete_object_in_bucket.assert_called_with(filename, bucket_name)
@@ -71,13 +71,11 @@ class DeleteObjectTest(TestCase):
         filename = 'aaa.txt'
         bucket_name = 'aarrrp'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('delete_object_in_s3', level='INFO') as f:
             delete_main([self.command_name, filename, bucket_name])
 
-        expected_answer = 'An error occurred ({0}) when calling the delete operation: {1}'.format(
-            error_response['Error']['Code'], error_response['Error']['Message'])
-        self.assertIn(expected_answer, f.getvalue())
+        expected_answer = 'ERROR:delete_object_in_s3:An error occurred (403) when calling the delete operation: forbidden'
+        self.assertIn(expected_answer, f.output)
 
         aws_session_mock.return_value.delete_object_in_bucket.assert_called_once()
         aws_session_mock.return_value.delete_object_in_bucket.assert_called_with(filename, bucket_name)
@@ -390,7 +388,8 @@ class DeleteBucketTest(TestCase):
         with self.assertLogs('delete_bucket_from_s3', level='INFO') as f:
             delete_bucket_main([self.command_name, bucket_name])
 
-        expected_answer = 'ERROR:delete_bucket_from_s3:An error occurred (403) when calling the deleting operation: forbidden'
+        expected_answer = 'ERROR:delete_bucket_from_s3:An error occurred (403) when calling the deleting operation: ' \
+                          'forbidden '
         self.assertIn(expected_answer, f.output)
 
         delete_bucket.assert_called_once()
@@ -439,7 +438,8 @@ class MoveBucketTest(TestCase):
         with self.assertLogs('move_bucket_from_s3', level='INFO') as f:
             move_bucket_main([self.command_name, source, target])
 
-        expected_answer = 'ERROR:move_bucket_from_s3:An error occurred (403) when calling the moving operation: forbidden'
+        expected_answer = 'ERROR:move_bucket_from_s3:An error occurred (403) when calling the moving operation: ' \
+                          'forbidden '
         self.assertIn(expected_answer, f.output)
 
         move_files_from_bucket_to_bucket.assert_called_once()
