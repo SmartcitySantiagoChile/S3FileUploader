@@ -1,5 +1,6 @@
 import argparse
 import glob
+import logging
 import os
 import sys
 from datetime import datetime
@@ -42,24 +43,26 @@ def main(argv):
     ignore_if_exists = args.ignore_if_exists
 
     aws_session = AWSSession()
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
 
     if replace and ignore_if_exists:
-        print('replace and ignore-if-exists options are incompatible')
+        logger.info('replace and ignore-if-exists options are incompatible')
         exit(1)
     
     if not aws_session.check_bucket_exists(bucket_name):
-        print('Bucket \'{0}\' does not exist'.format(bucket_name))
+        logger.info(f"Bucket {bucket_name} does not exist")
         exit(1)
     
     def send_file_to_s3(matched_file, filename):
-        print('{0}: uploading file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
+        logger.info(f"{datetime.now().replace(microsecond=0)}: uploading file {matched_file}")
         aws_session.send_file_to_bucket(matched_file, filename, bucket_name)
-        print('{0}: finished load of file {1}'.format(datetime.now().replace(microsecond=0), matched_file))
+        logger.info(f"{datetime.now().replace(microsecond=0)}: finished load of file {matched_file}")
         
     for datafile in datafiles:
         matched_files = glob.glob(datafile)
         if len(matched_files) == 0:
-            print('path "{0}" does not match with any file'.format(datafile))
+            logger.info(f'path "{datafile}" does not match with any file')
             continue
 
         for matched_file in matched_files:
@@ -69,7 +72,7 @@ def main(argv):
                 try:
                     datetime.strptime(filename_date_part, "%Y-%m-%d")
                 except ValueError:
-                    print('\'{0}\' does not have a valid format name'.format(filename))
+                    logger.error(f'\'{filename}\' does not have a valid format name')
                     continue
 
             try:
@@ -83,14 +86,14 @@ def main(argv):
                 elif ignore_if_exists:
                     continue
                 else:
-                    answer = input('file \'{0}\' exists in bucket. Do you want to replace it? (y/n): '.format(filename))
+                    answer = input(f'file \'{filename}\' exists in bucket. Do you want to replace it? (y/n): ')
                     if answer not in ['y', 'Y']:
-                        print('file {0} was not replaced'.format(filename))
+                        logger.info(f"file {filename} was not replaced")
                         continue
                     send_file_to_s3(matched_file, filename)
             except ClientError as e:
                 # ignore it and continue uploading files
-                print(e)
+                logger.error(e)
 
 
 if __name__ == "__main__":

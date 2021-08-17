@@ -104,12 +104,11 @@ class UploadObjectTest(TestCase):
         filename = 'aaa.txt'
         bucket_name = 'aarrrp'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             with self.assertRaises(SystemExit):
                 upload_main([self.command_name, filename, bucket_name])
-
-        self.assertIn('Bucket \'{0}\' does not exist'.format(bucket_name), f.getvalue())
+        expected_answer = "INFO:upload_to_s3:Bucket aarrrp does not exist"
+        self.assertIn(expected_answer, f.output)
 
     @mock.patch('upload_to_s3.AWSSession')
     @mock.patch('upload_to_s3.glob')
@@ -124,11 +123,11 @@ class UploadObjectTest(TestCase):
         mock_call = aws_session_mock.return_value.send_file_to_bucket
         glob_mock.glob.return_value = [filepath]
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             upload_main([self.command_name, filepath, bucket_name])
-        self.assertIn('uploading file ', f.getvalue())
-        self.assertIn('finished load of file', f.getvalue())
+
+        self.assertIn('uploading file', f.output[0])
+        self.assertIn('finished load of file', f.output[1])
 
         mock_call.assert_called_once()
         mock_call.assert_called_with(filepath, filename, bucket_name)
@@ -144,10 +143,9 @@ class UploadObjectTest(TestCase):
         aws_session_mock.return_value.check_bucket_exists.return_value = True
         glob_mock.glob.return_value = [filepath]
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             upload_main([self.command_name, filepath, bucket_name])
-        self.assertIn('does not have a valid format name', f.getvalue())
+        self.assertIn('does not have a valid format name', f.output[0])
 
     @mock.patch('upload_to_s3.AWSSession')
     @mock.patch('upload_to_s3.glob')
@@ -162,12 +160,11 @@ class UploadObjectTest(TestCase):
         mock_call = aws_session_mock.return_value.send_file_to_bucket
         glob_mock.glob.return_value = [filepath]
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             upload_main([self.command_name, filepath, bucket_name, '--omit-filename-check'])
-        self.assertNotIn('does not have a valid format name', f.getvalue())
-        self.assertIn('uploading file ', f.getvalue())
-        self.assertIn('finished load of file', f.getvalue())
+        self.assertNotIn('does not have a valid format name', f.output[0])
+        self.assertIn('uploading file ', f.output[0])
+        self.assertIn('finished load of file', f.output[1])
 
         mock_call.assert_called_once()
         mock_call.assert_called_with(filepath, filename, bucket_name)
@@ -188,11 +185,10 @@ class UploadObjectTest(TestCase):
 
         input_mock.return_value = 'y'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             upload_main([self.command_name, filepath, bucket_name])
-        self.assertIn('uploading file ', f.getvalue())
-        self.assertIn('finished load of file', f.getvalue())
+        self.assertIn('uploading file ', f.output[0])
+        self.assertIn('finished load of file', f.output[1])
 
         mock_call.assert_called_once()
         mock_call.assert_called_with(filepath, filename, bucket_name)
@@ -212,11 +208,10 @@ class UploadObjectTest(TestCase):
         mock_call = aws_session_mock.return_value.send_file_to_bucket
         glob_mock.glob.return_value = [filepath]
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             upload_main([self.command_name, filepath, bucket_name, '--replace'])
-        self.assertIn('uploading file ', f.getvalue())
-        self.assertIn('finished load of file', f.getvalue())
+        self.assertIn('uploading file ', f.output[0])
+        self.assertIn('finished load of file', f.output[1])
 
         input_mock.assert_not_called()
         mock_call.assert_called_once()
@@ -238,11 +233,10 @@ class UploadObjectTest(TestCase):
 
         input_mock.return_value = 'n'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='INFO') as f:
             upload_main([self.command_name, filepath, bucket_name])
-        self.assertIn('file {0} was not replaced'.format(filename), f.getvalue())
-        self.assertNotIn('finished load of file', f.getvalue())
+        self.assertIn('file {0} was not replaced'.format(filename), f.output[0])
+        self.assertNotIn('finished load of file', f.output[0])
 
         mock_call.assert_not_called()
 
@@ -262,12 +256,11 @@ class UploadObjectTest(TestCase):
 
         glob_mock.glob.return_value = [filepath]
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('upload_to_s3', level='ERROR') as f:
             upload_main([self.command_name, filepath, bucket_name])
-            expected_answer = 'An error occurred ({0}) when calling the delete operation: {1}'.format(
-                error_response['Error']['Code'], error_response['Error']['Message'])
-        self.assertIn(expected_answer, f.getvalue())
+            expected_answer = f"An error occurred ({error_response['Error']['Code']}) when calling the delete " \
+                              f"operation: {error_response['Error']['Message']}"
+            self.assertIn(expected_answer, f.output[0])
 
 
 class DownloadObjectTest(TestCase):
