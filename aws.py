@@ -1,3 +1,5 @@
+import logging
+import pathlib
 import urllib
 
 import boto3
@@ -15,6 +17,7 @@ class AWSSession:
         self.session = boto3.Session(
             aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=config('AWS_SECRET_ACCESS_KEY'))
+        self.logger = logging.getLogger(__name__)
 
     def retrieve_obj_list(self, bucket_name):
         s3 = self.session.resource('s3')
@@ -85,3 +88,81 @@ class AWSSession:
         s3 = self.session.resource('s3')
         bucket = s3.Bucket(bucket_name)
         bucket.download_file(obj_key, file_path)
+
+    def copy_file_from_bucket_to_bucket(self, source_bucket_name, target_bucket_name, file_name) -> None:
+        """
+        Copy file from source bucket to target bucket
+        Args:
+            source_bucket_name: source bucket
+            target_bucket_name: target bucket
+            file_name: file name
+        """
+        s3 = self.session.resource('s3')
+        target_bucket = s3.Bucket(target_bucket_name)
+        copy_source = {
+            'Bucket': source_bucket_name,
+            'Key': file_name
+        }
+        target_bucket.copy(copy_source, file_name)
+
+    def move_files_from_bucket_to_bucket(self, source_bucket_name: str, target_bucket_name: str, datafiles: list,
+                                         extension_list: list) -> None:
+        """
+        Move files from source bucket to target bucket
+        Args:
+            source_bucket_name: source bucket
+            target_bucket_name: target bucket
+            datafiles: list of files to move (optional)
+            extension_list: list of extension filter (op)
+        """
+        s3 = self.session.resource('s3')
+        source_bucket = s3.Bucket(source_bucket_name)
+
+        if not datafiles:
+            datafiles = [obj.key for obj in source_bucket.objects.all()]
+            if extension_list:
+                datafiles = filter_by_extension(datafiles, extension_list)
+            for file in datafiles:
+                self.copy_file_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file)
+                self.delete_object_in_bucket(file, source_bucket_name)
+                self.logger.info(f"{file} moved from {source_bucket_name} to {target_bucket_name}")
+        else:
+            if extension_list:
+                datafiles = filter_by_extension(datafiles, extension_list)
+            for file_name in datafiles:
+                if self.check_file_exists(source_bucket_name, file_name):
+                    self.copy_file_from_bucket_to_bucket(source_bucket_name, target_bucket_name, file_name)
+                    self.delete_object_in_bucket(file_name, source_bucket_name)
+                    self.logger.info(f"{file_name} moved from {source_bucket_name} to {target_bucket_name}")
+                else:
+                    self.logger.info(f"{file_name} does not exist in {source_bucket_name}")
+
+    def delete_bucket(self, bucket_name: str) -> None:
+        """
+        Delete bucket with all files
+        Args:
+            bucket_name: name of bucket to delete
+        """
+        s3 = self.session.resource('s3')
+        client = self.session.client('s3')
+        bucket = s3.Bucket(bucket_name)
+        for file in bucket.objects.all():
+            self.delete_object_in_bucket(file.key, bucket_name)
+            self.logger.info(f"{file.key} deleted")
+
+        client.delete_bucket(Bucket=bucket_name)
+        self.logger.info(f"{bucket_name} deleted")
+
+
+def filter_by_extension(file_list: list, extension_list: list) -> list:
+    """
+    Filter file_list returning only extension_list
+    Args:
+        file_list: list with filenames
+        extension_list: list with extensions
+
+    Returns:
+        list: filtered list
+    """
+    return [file for file in file_list if any(ext in pathlib.Path(file).suffixes for ext in extension_list)]
+

@@ -1,6 +1,6 @@
 from unittest import TestCase
+from unittest import mock
 
-import mock
 from botocore.exceptions import ClientError
 
 import aws
@@ -107,3 +107,66 @@ class AwsTest(TestCase):
         bucket.Bucket.return_value = bucket
         self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
         self.aws_session.download_object_from_bucket('key', 'name', 'path')
+
+    def test_copy_files_from_bucket_to_bucket(self):
+        target_bucket = mock.MagicMock(copy=mock.MagicMock())
+        target_bucket.Bucket.return_value = target_bucket
+        self.aws_session.session.resource = mock.MagicMock(return_value=target_bucket)
+        self.aws_session.copy_file_from_bucket_to_bucket('source_bucket', 'target_bucket', 'file_name')
+
+    def test_filter_by_extension(self):
+        file_list = ['2020-01-01.trip.gz', '2020-01-01.viajes.gz']
+        expected_list = ['2020-01-01.trip.gz']
+        extension = ['.trip']
+        self.assertEqual(expected_list, aws.filter_by_extension(file_list, extension))
+
+        file_list = ['2020-01-01.trip.gz', '2020-01-01.viajes.gz']
+        extension = ['.trip', '.viajes']
+        self.assertEqual(file_list, aws.filter_by_extension(file_list, extension))
+
+        file_list = ['2020-01-01.trip.gz', '2020-01-01.viajes.gz', '2020-01-01.trip', '2020-01-01.viajes']
+        expected_list = ['2020-01-01.trip.gz', '2020-01-01.trip']
+        extension = ['.trip']
+        self.assertEqual(expected_list, aws.filter_by_extension(file_list, extension))
+
+    def test_delete_bucket(self):
+        file_list = [mock.MagicMock(key='2020-01-01.trip.gz')]
+        object_bucket = mock.MagicMock(all=mock.MagicMock(return_value=file_list))
+        bucket = mock.MagicMock()
+        bucket.Bucket.return_value = mock.MagicMock(objects=object_bucket)
+        self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
+        client = mock.MagicMock(delete_bucket=mock.MagicMock())
+        self.aws_session.session.client = mock.MagicMock(return_value=client)
+        self.aws_session.delete_object_in_bucket = mock.MagicMock()
+        self.aws_session.delete_bucket('bucket_name')
+
+    def test_move_files_from_bucket_to_bucket(self):
+        # all files case
+        source_bucket_name = 'source'
+        target_bucket_name = 'target'
+        datafiles = []
+        extension_list = ['.trip']
+        file_list = [mock.MagicMock(key='2020-01-01.trip.gz')]
+        object_bucket = mock.MagicMock(all=mock.MagicMock(return_value=file_list))
+        bucket = mock.MagicMock()
+        bucket.Bucket.return_value = mock.MagicMock(objects=object_bucket)
+        self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
+        self.aws_session.copy_file_from_bucket_to_bucket = mock.MagicMock()
+        self.aws_session.delete_object_in_bucket = mock.MagicMock()
+        self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
+                                                          extension_list)
+        # one file case
+        datafiles = ['2020-01-01.trip.gz']
+        object_bucket = mock.MagicMock(all=mock.MagicMock(return_value=file_list))
+        bucket = mock.MagicMock()
+        bucket.Bucket.return_value = mock.MagicMock(objects=object_bucket)
+        self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
+        self.aws_session.copy_file_from_bucket_to_bucket = mock.MagicMock()
+        self.aws_session.delete_object_in_bucket = mock.MagicMock()
+        self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
+                                                          extension_list)
+
+        # one file does not exist case
+        self.aws_session.check_file_exists = mock.MagicMock(return_value=False)
+        self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
+                                                          extension_list)

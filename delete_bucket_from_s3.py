@@ -14,19 +14,18 @@ from aws import AWSSession
 
 def main(argv):
     """
-    This script remove an object from S3 bucket.
+    This script will delete a S3 bucket.
     """
-    # Arguments and description
-    parser = argparse.ArgumentParser(description='delete an object from S3 bucket')
 
-    parser.add_argument('filename', help='filename to delete in bucket')
-    parser.add_argument('bucket', default=None, help='bucket name. Valid options are: ')
+    # Arguments and description
+    parser = argparse.ArgumentParser(description='delete S3 bucket')
+
+    parser.add_argument('bucket_name', help='bucket name')
 
     args = parser.parse_args(argv[1:])
 
     # Give names to arguments
-    filename = args.filename
-    bucket_name = args.bucket
+    bucket_name = args.bucket_name
 
     aws_session = AWSSession()
     logger = logging.getLogger(__name__)
@@ -37,10 +36,8 @@ def main(argv):
         exit(1)
 
     try:
-        aws_session.delete_object_in_bucket(filename, bucket_name)
-        logger.info(f"Object {filename} was deleted successfully!")
+        aws_session.delete_bucket(bucket_name)
     except ClientError as e:
-        # ignore it and continue uploading files
         logger.error(e)
 
 

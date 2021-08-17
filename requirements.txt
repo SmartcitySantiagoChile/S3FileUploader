@@ -3,4 +3,3 @@ boto3==1.9.88
 botocore==1.12.89
 coverage==4.5.3
 python-coveralls==2.9.3
-mock==4.0.2

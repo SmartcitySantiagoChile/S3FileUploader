@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 
@@ -30,26 +31,28 @@ def main(argv):
     datafiles = args.filename
     bucket_name = args.bucket
     destination_path = args.destination_path
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
 
     if destination_path is not None and not os.path.isdir(destination_path):
-        print('Path \'{0}\' is not valid'.format(destination_path))
+        logger.info(f"Path \'{destination_path}\' is not valid")
         exit(1)
 
     aws_session = AWSSession()
 
     if not aws_session.check_bucket_exists(bucket_name):
-        print('Bucket \'{0}\' does not exist'.format(bucket_name))
+        logger.info(f"Bucket \'{bucket_name}\' does not exist")
         exit(1)
 
     for datafile in datafiles:
         filename = datafile
         if destination_path is not None:
             filename = os.path.join(destination_path, datafile)
-        print('downloading object {0} ...'.format(datafile))
+        logger.info(f"downloading object {datafile} ...")
         try:
             aws_session.download_object_from_bucket(datafile, bucket_name, filename)
         except ClientError as e:
-            print(e)
+            logger.error(e)
 
 
 if __name__ == "__main__":
