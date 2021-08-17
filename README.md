@@ -158,7 +158,7 @@ optional arguments:
 python move_bucket_from_s3.py bucket_origen bucket_destino --filename nombre_archivo --extension filtro_de_extensiones
 ```
 
-El primer parámetros es el bucket desde donde se copiarán los archivos. El segundo comando es el bucket al que se copiarán los archivos.
+El primer parámetro es el bucket desde donde se copiarán los archivos. El segundo comando es el bucket al que se copiarán los archivos.
 El parámetro opcional nombre_archivo es para solo mover uno o más archivos según nombre de archivo. El último parámetro opcional, 
 filtro_de_extensiones, permite mover los archivos que solo contengan las extensiones indicadas. Ej: .viajes
 

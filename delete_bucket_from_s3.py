@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 
@@ -27,15 +28,17 @@ def main(argv):
     bucket_name = args.bucket_name
 
     aws_session = AWSSession()
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
 
     if not aws_session.check_bucket_exists(bucket_name):
-        print(f"Bucket {bucket_name} does not exist")
+        logger.info(f"Bucket {bucket_name} does not exist")
         exit(1)
 
     try:
         aws_session.delete_bucket(bucket_name)
     except ClientError as e:
-        print(e)
+        logger.error(e)
 
 
 if __name__ == "__main__":

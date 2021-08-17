@@ -1,6 +1,6 @@
 import io
 import os
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stdout
 from unittest import TestCase, mock
 
 from botocore.exceptions import ClientError
@@ -377,26 +377,24 @@ class DeleteBucketTest(TestCase):
         with self.assertRaises(SystemExit):
             delete_bucket_main([self.command_name, source])
 
-    @mock.patch('delete_bucket_from_s3.AWSSession')
-    def test_bucket_raise_error_when_is_deleting(self, aws_session_mock):
+    @mock.patch('delete_bucket_from_s3.AWSSession.delete_bucket')
+    @mock.patch('delete_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_bucket_raise_error_when_is_deleting(self, check_bucket_exists, delete_bucket):
         operation_name = 'deleting'
         error_response = dict(Error=dict(Code=403, Message='forbidden'))
-        aws_session_mock.return_value.check_bucket_exists.return_value = True
-        aws_session_mock.return_value.delete_bucket.side_effect = ClientError(error_response,
-                                                                              operation_name)
+        check_bucket_exists.return_value = True
+        delete_bucket.side_effect = ClientError(error_response, operation_name)
 
         bucket_name = 'void_bucket'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('delete_bucket_from_s3', level='INFO') as f:
             delete_bucket_main([self.command_name, bucket_name])
 
-        expected_answer = 'An error occurred ({0}) when calling the deleting operation: {1}'.format(
-            error_response['Error']['Code'], error_response['Error']['Message'])
-        self.assertIn(expected_answer, f.getvalue())
+        expected_answer = 'ERROR:delete_bucket_from_s3:An error occurred (403) when calling the deleting operation: forbidden'
+        self.assertIn(expected_answer, f.output)
 
-        aws_session_mock.return_value.delete_bucket.assert_called_once()
-        aws_session_mock.return_value.delete_bucket.assert_called_with(bucket_name)
+        delete_bucket.assert_called_once()
+        delete_bucket.assert_called_with(bucket_name)
 
 
 class MoveBucketTest(TestCase):
@@ -438,11 +436,10 @@ class MoveBucketTest(TestCase):
         source = 'source'
         target = 'target'
 
-        f = io.StringIO()
-        with self.assertLogs('aws', level='INFO') as f:
+        with self.assertLogs('move_bucket_from_s3', level='INFO') as f:
             move_bucket_main([self.command_name, source, target])
 
-        expected_answer = 'ERROR:aws:An error occurred (403) when calling the moving operation: forbidden'
+        expected_answer = 'ERROR:move_bucket_from_s3:An error occurred (403) when calling the moving operation: forbidden'
         self.assertIn(expected_answer, f.output)
 
         move_files_from_bucket_to_bucket.assert_called_once()
