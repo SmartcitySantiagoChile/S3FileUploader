@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 
@@ -34,18 +35,19 @@ def main(argv):
     extension = args.extension_filter
 
     aws_session = AWSSession()
+    logging.basicConfig(level=logging.INFO)
 
     if not aws_session.check_bucket_exists(source_bucket_name):
-        print(f"Bucket {source_bucket_name} does not exist")
+        aws_session.logger.info(f"Bucket {source_bucket_name} does not exist")
         exit(1)
 
     if not aws_session.check_bucket_exists(target_bucket_name):
-        print(f"Bucket {target_bucket_name} does not exist")
+        aws_session.logger.info(f"Bucket {target_bucket_name} does not exist")
         exit(1)
     try:
         aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles, extension)
     except ClientError as e:
-        print(e)
+        aws_session.logger.error(e)
 
 
 if __name__ == "__main__":

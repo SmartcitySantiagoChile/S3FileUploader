@@ -1,6 +1,6 @@
 import io
 import os
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, redirect_stderr
 from unittest import TestCase, mock
 
 from botocore.exceptions import ClientError
@@ -428,24 +428,22 @@ class MoveBucketTest(TestCase):
         with self.assertRaises(SystemExit):
             move_bucket_main([self.command_name, source, target])
 
-    @mock.patch('move_bucket_from_s3.AWSSession')
-    def test_bucket_raise_error_when_is_moving(self, aws_session_mock):
+    @mock.patch('move_bucket_from_s3.AWSSession.move_files_from_bucket_to_bucket')
+    @mock.patch('move_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_bucket_raise_error_when_is_moving(self, check_bucket_exists, move_files_from_bucket_to_bucket):
         operation_name = 'moving'
         error_response = dict(Error=dict(Code=403, Message='forbidden'))
-        aws_session_mock.return_value.check_bucket_exists.return_value = [True, True]
-        aws_session_mock.return_value.move_files_from_bucket_to_bucket.side_effect = ClientError(error_response,
-                                                                                                 operation_name)
-
+        check_bucket_exists.return_value = [True, True]
+        move_files_from_bucket_to_bucket.side_effect = ClientError(error_response, operation_name)
         source = 'source'
         target = 'target'
 
         f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('aws', level='INFO') as f:
             move_bucket_main([self.command_name, source, target])
 
-        expected_answer = 'An error occurred ({0}) when calling the moving operation: {1}'.format(
-            error_response['Error']['Code'], error_response['Error']['Message'])
-        self.assertIn(expected_answer, f.getvalue())
+        expected_answer = 'ERROR:aws:An error occurred (403) when calling the moving operation: forbidden'
+        self.assertIn(expected_answer, f.output)
 
-        aws_session_mock.return_value.move_files_from_bucket_to_bucket.assert_called_once()
-        aws_session_mock.return_value.move_files_from_bucket_to_bucket.assert_called_with(source, target, None, None)
+        move_files_from_bucket_to_bucket.assert_called_once()
+        move_files_from_bucket_to_bucket.assert_called_with(source, target, None, None)
