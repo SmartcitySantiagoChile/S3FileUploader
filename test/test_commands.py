@@ -378,7 +378,7 @@ class DeleteBucketTest(TestCase):
             delete_bucket_main([self.command_name, bucket_name])
 
         expected_answer = 'ERROR:delete_bucket_from_s3:An error occurred (403) when calling the deleting operation: ' \
-                          'forbidden '
+                          'forbidden'
         self.assertIn(expected_answer, f.output)
 
         delete_bucket.assert_called_once()
@@ -428,7 +428,7 @@ class MoveBucketTest(TestCase):
             move_bucket_main([self.command_name, source, target])
 
         expected_answer = 'ERROR:move_bucket_from_s3:An error occurred (403) when calling the moving operation: ' \
-                          'forbidden '
+                          'forbidden'
         self.assertIn(expected_answer, f.output)
 
         move_files_from_bucket_to_bucket.assert_called_once()
