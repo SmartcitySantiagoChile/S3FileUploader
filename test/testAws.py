@@ -1,6 +1,6 @@
 from unittest import TestCase
+from unittest import mock
 
-import mock
 from botocore.exceptions import ClientError
 
 import aws
@@ -151,7 +151,7 @@ class AwsTest(TestCase):
         bucket = mock.MagicMock()
         bucket.Bucket.return_value = mock.MagicMock(objects=object_bucket)
         self.aws_session.session.resource = mock.MagicMock(return_value=bucket)
-        self.aws_session.copy_file_from_bucket_to_bucket= mock.MagicMock()
+        self.aws_session.copy_file_from_bucket_to_bucket = mock.MagicMock()
         self.aws_session.delete_object_in_bucket = mock.MagicMock()
         self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
                                                           extension_list)
@@ -167,6 +167,6 @@ class AwsTest(TestCase):
                                                           extension_list)
 
         # one file does not exist case
-        self.aws_session.check_file_exists = mock.MagicMock(return_value = False)
+        self.aws_session.check_file_exists = mock.MagicMock(return_value=False)
         self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
                                                           extension_list)
