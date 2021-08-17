@@ -286,12 +286,11 @@ class DownloadObjectTest(TestCase):
         filename = 'aaa.txt'
         bucket_name = 'aarrrp'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('download_from_s3', level='INFO') as f:
             with self.assertRaises(SystemExit):
                 download_main([self.command_name, filename, bucket_name])
 
-        self.assertIn('Bucket \'{0}\' does not exist'.format(bucket_name), f.getvalue())
+        self.assertIn(f'Bucket \'{bucket_name}\' does not exist', f.output[0])
 
     def test_path_is_not_valid(self):
         """ path is not valid """
@@ -301,11 +300,11 @@ class DownloadObjectTest(TestCase):
         destination_path = 'asdasd-sf-sf'
 
         f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('download_from_s3', level='INFO') as f:
             with self.assertRaises(SystemExit):
                 download_main([self.command_name, filename, bucket_name, dest_option, destination_path])
 
-        self.assertIn('Path \'{0}\' is not valid'.format(destination_path), f.getvalue())
+        self.assertIn(f'Path \'{destination_path}\' is not valid', f.output[0])
 
     @mock.patch('download_from_s3.AWSSession')
     def test_bucket_is_downloaded(self, aws_session_mock):
@@ -318,11 +317,10 @@ class DownloadObjectTest(TestCase):
         dest_option = '--destination-path'
         destination_path = str(os.getcwd())
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('download_from_s3', level='INFO') as f:
             download_main([self.command_name, filename, bucket_name, dest_option, destination_path])
 
-        self.assertIn('downloading object {0} ...'.format(filename), f.getvalue())
+        self.assertIn(f'downloading object {filename} ...', f.output[0])
 
         destination_path = os.path.join(destination_path, filename)
         aws_session_mock.return_value.download_object_from_bucket.assert_called_once()
@@ -341,13 +339,11 @@ class DownloadObjectTest(TestCase):
         filename = 'aaa.txt'
         bucket_name = 'aarrrp'
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with self.assertLogs('download_from_s3', level='INFO') as f:
             download_main([self.command_name, filename, bucket_name])
 
-        expected_answer = 'An error occurred ({0}) when calling the download operation: {1}'.format(
-            error_response['Error']['Code'], error_response['Error']['Message'])
-        self.assertIn(expected_answer, f.getvalue())
+        expected_answer = f"An error occurred ({error_response['Error']['Code']}) when calling the download operation: {error_response['Error']['Message']}"
+        self.assertIn(expected_answer, f.output[1])
 
         aws_session_mock.return_value.download_object_from_bucket.assert_called_once()
         aws_session_mock.return_value.download_object_from_bucket.assert_called_with(filename, bucket_name, filename)
