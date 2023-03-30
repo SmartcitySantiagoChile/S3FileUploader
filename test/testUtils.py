@@ -5,6 +5,7 @@ from utils import (
     valid_date,
     get_date_list_between_two_given_dates,
     update_file_by_tuples,
+    retrieve_objects_with_extension_pattern,
 )
 import datetime
 import argparse
@@ -71,32 +72,68 @@ class TestUpdateFileByTuples(TestCase):
         return super().setUp()
 
     def test_update_file_by_tuples(self):
-        input_file: str = os.path.join(os.path.dirname(__file__), "files", self.file_name_list[0]) 
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", self.file_name_list[0]
+        )
         output_file: str = input_file + "-updated"
-        tuple_1: tuple = ('3', '2', '1')
+        tuple_1: tuple = ("3", "2", "1")
         update_file_by_tuples(input_file, output_file, [tuple_1])
-        with open(input_file, 'r') as input, open(output_file, 'r') as output:
-            reader_input: csv.reader = csv.reader(input, delimiter='|')
-            reader_output: csv.reader = csv.reader(output, delimiter='|')
+        with open(input_file, "r") as input, open(output_file, "r") as output:
+            reader_input: csv.reader = csv.reader(input, delimiter="|")
+            reader_output: csv.reader = csv.reader(output, delimiter="|")
             for row_input, row_output in zip(reader_input, reader_output):
-                if row_input[3] == '2':
-                    self.assertEqual(row_output[3], '1')
+                if row_input[3] == "2":
+                    self.assertEqual(row_output[3], "1")
         os.remove(output_file)
-    
+
     def test_update_file_by_tuples(self):
-        input_file: str = os.path.join(os.path.dirname(__file__), "files", self.file_name_list[0]) 
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", self.file_name_list[0]
+        )
         output_file: str = input_file + "-updated"
-        tuple_list: list[tuple] = [
-            ('3', '2', '1'),
-            ('3', '5', '1')
-        ]
+        tuple_list: list[tuple] = [("3", "2", "1"), ("3", "5", "1")]
         update_file_by_tuples(input_file, output_file, tuple_list)
-        with open(input_file, 'r') as input, open(output_file, 'r') as output:
-            reader_input: csv.reader = csv.reader(input, delimiter='|')
-            reader_output: csv.reader = csv.reader(output, delimiter='|')
+        with open(input_file, "r") as input, open(output_file, "r") as output:
+            reader_input: csv.reader = csv.reader(input, delimiter="|")
+            reader_output: csv.reader = csv.reader(output, delimiter="|")
             for row_input, row_output in zip(reader_input, reader_output):
-                if row_input[3] == '2':
-                    self.assertEqual(row_output[3], '1')
-                if row_input[3] == '5':
-                    self.assertEqual(row_output[3], '1')
+                if row_input[3] == "2":
+                    self.assertEqual(row_output[3], "1")
+                if row_input[3] == "5":
+                    self.assertEqual(row_output[3], "1")
         os.remove(output_file)
+
+
+class TestRetrieveObjectsWithPattern(TestCase):
+    def test_not_matched_case(self):
+        extension_pattern = ".trip*"
+        aws_object_list: list[dict[str, str]] = [
+            {"name": "example.bip"},
+            {"name": "example2.bip"},
+            {"name": "example3.bip"},
+        ]
+        self.assertEqual([],
+            retrieve_objects_with_extension_pattern(extension_pattern, aws_object_list)
+        )
+
+    def test_matched_case(self):
+        extension_pattern = ".bip*"
+        aws_object_list: list[dict[str, str]] = [
+            {"name": "example.bip"},
+            {"name": "example2.bip"},
+            {"name": "example3.bip"},
+        ]
+        self.assertEqual(["example.bip", "example2.bip", "example3.bip"],
+            retrieve_objects_with_extension_pattern(extension_pattern, aws_object_list)
+        )
+
+    def test_matched_case_for_gz_and_zip(self):
+        extension_pattern = ".bip*"
+        aws_object_list: list[dict[str, str]] = [
+            {"name": "example.bip"},
+            {"name": "example2.bip.gz"},
+            {"name": "example3.bip.zip"},
+        ]
+        self.assertEqual(["example.bip", "example2.bip.gz", "example3.bip.zip"],
+            retrieve_objects_with_extension_pattern(extension_pattern, aws_object_list)
+        )

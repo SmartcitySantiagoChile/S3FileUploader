@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import argparse
 import csv
+import fnmatch
 
 def valid_date(s: str) -> datetime.date:
     """This is a function that validate a date with the format YYYY-mm-dd.
@@ -20,17 +21,21 @@ def valid_date(s: str) -> datetime.date:
         msg: str = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)
     
-def retrieve_objects_with_pattern(pattern: str, aws_object_list: list) -> list:
-    """AI is creating summary for retrieve_objects_with_pattern
+def retrieve_objects_with_extension_pattern(extension_pattern: str, aws_object_list: list) -> list:
+    """This is a function that retrieves all filenames that match a extension pattern by checking an AWS object list.
 
     Args:
-        pattern (str): [description]
-        aws_object_list (list): [description]
+        extension_pattern (str): filename pattern
+        aws_object_list (list): AWS object list 
 
     Returns:
-        list: [description]
+        list: object matched list
     """
-    return []
+    object_matched_list: list = []
+    for object in aws_object_list:
+        if object.get("name") and fnmatch.fnmatch(object.get("name"), f"*{extension_pattern}"):
+            object_matched_list.append(object["name"])
+    return object_matched_list
 
 
 def get_date_list_between_two_given_dates(start_date: datetime, end_date: datetime) -> list:
