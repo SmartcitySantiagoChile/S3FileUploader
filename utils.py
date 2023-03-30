@@ -2,6 +2,11 @@ from datetime import datetime, timedelta
 import argparse
 import csv
 import fnmatch
+import io
+import os
+import zipfile
+import gzip
+
 
 def valid_date(s: str) -> datetime.date:
     """This is a function that validate a date with the format YYYY-mm-dd.
@@ -20,13 +25,46 @@ def valid_date(s: str) -> datetime.date:
     except ValueError:
         msg: str = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)
-    
+
+
+def valid_three_tuple_list(tuple_list: str) -> list:
+    """This is a function that validate a three tuple list with the format [a,b,c] [d,e,f] ... [x,y,z].
+
+    Args:
+        tuple_list (str): A string that represents a three tuple list
+
+    Raises:
+        ValueError: Raise this error in case of malformed tuple_list
+
+    Returns:
+        list: A formatted three tuple list
+    """
+    split_tuple_list: list = tuple_list.split()
+    three_tuple_list: list = []
+    for three_tuple_string in split_tuple_list:
+        try:
+            three_tuple: list = [x for x in three_tuple_string.strip("[]").split(",")]
+            if len(three_tuple) != 3:
+                raise argparse.ArgumentTypeError(
+                    f"Malformed input: {three_tuple_string}. Must be a three tuple. Check if the string has wrong spaces."
+                )
+            if len(three_tuple) and not three_tuple[0].isnumeric():
+                raise argparse.ArgumentTypeError(
+                    f"Malformed input: {three_tuple_string}. The first element must be a digit."
+                )
+            three_tuple_list.append(three_tuple)
+
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"Malformed input: {three_tuple_string}")
+    return three_tuple_list
+
+
 def retrieve_objects_with_pattern(pattern: str, aws_object_list: list) -> list:
     """This is a function that retrieves all filenames that match a pattern by checking an AWS object list.
 
     Args:
         pattern (str): filename pattern
-        aws_object_list (list): AWS object list 
+        aws_object_list (list): AWS object list
 
     Returns:
         list: object matched list
@@ -38,7 +76,9 @@ def retrieve_objects_with_pattern(pattern: str, aws_object_list: list) -> list:
     return object_matched_list
 
 
-def get_date_list_between_two_given_dates(start_date: datetime, end_date: datetime) -> list:
+def get_date_list_between_two_given_dates(
+    start_date: datetime, end_date: datetime
+) -> list:
     """This function make a list of dates between two given dates.
 
     Args:
@@ -61,7 +101,10 @@ def get_date_list_between_two_given_dates(start_date: datetime, end_date: dateti
         start_date += delta
     return dates
 
-def update_file_by_tuples(input_file_name: str, output_file_name: str, tuples: list, delimiter="|"):
+
+def update_file_by_tuples(
+    input_file_name: str, output_file_name: str, tuples: list, delimiter="|"
+):
     """This function update a csv-like file with tuples values using the delimiter.
 
     Args:
@@ -70,12 +113,60 @@ def update_file_by_tuples(input_file_name: str, output_file_name: str, tuples: l
         tuples (list): The tuples list with tuples in format [(column_to_check, value_to_replace, new_value)...]
         delimiter (str, optional): File's delimiter. Defaults to "|".
     """
-    with open(input_file_name, 'r') as input_file, open(output_file_name, 'w') as output_file:
+    with open(input_file_name, "r") as input_file, open(
+        output_file_name, "w"
+    ) as output_file:
         reader: csv.reader = csv.reader(input_file, delimiter=delimiter)
         writer: csv.writer = csv.writer(output_file, delimiter=delimiter)
         for row in reader:
             for tuple_list in tuples:
-                if int(tuple_list[0]) < len(row) and row[int(tuple_list[0])] == str(tuple_list[1]):
+                if int(tuple_list[0]) < len(row) and row[int(tuple_list[0])] == str(
+                    tuple_list[1]
+                ):
                     row[int(tuple_list[0])] = tuple_list[2]
-                    
+
             writer.writerow(row)
+
+
+def is_gzipfile(file_path: str) -> bool:
+    """This function validate if a file_path is a gzip file.
+
+    Args:
+        file_path (str): The file path
+
+    Returns:
+        bool: True if is a gzip file
+    """
+    with gzip.open(file_path) as file_obj:
+        try:
+            file_obj.read(1)
+            return True
+        except IOError:
+            return False
+
+
+def get_file_object_copy(file_path: str):
+    """This function is designed to open a file in one of three possible formats: gzip, zip, or no compressed. Then, make a copy.
+    Args:
+        file_path (_type_): _description_
+
+    Returns:
+        str: Return the filepath of the copy.
+    """
+    compress_mode: str = ""
+    file_name: str = os.path.basename(file_path)
+    path: str = os.path.dirname(file_path)
+    if zipfile.is_zipfile(file_path):
+        with zipfile.ZipFile(file_path, "r") as zip_file:
+            zip_file.extractall(path=path)
+            inside_file: str = file_name.split(".zip")[0]
+            file_name =  inside_file + ".copy"
+            compress_mode = "zip"
+            os.rename(os.path.join(path, inside_file), os.path.join(path, file_name))
+            file_name = os.path.join(path, file_name)
+    elif is_gzipfile(file_path):
+        file_name: gzip.GzipFile = gzip.open(file_path, str("rt"), encoding="utf-8")
+    else:
+        file_name = io.open(file_path, str("r"), encoding="utf-8")
+
+    return file_name, compress_mode
