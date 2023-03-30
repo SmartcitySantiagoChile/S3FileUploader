@@ -4,6 +4,7 @@ import csv
 import fnmatch
 import io
 import os
+import shutil
 import zipfile
 import gzip
 
@@ -146,7 +147,8 @@ def is_gzipfile(file_path: str) -> bool:
 
 
 def get_file_object_copy(file_path: str):
-    """This function is designed to open a file in one of three possible formats: gzip, zip, or no compressed. Then, make a copy.
+    """This function is designed to open a file in one of three possible formats: gzip, zip, or no compressed.
+      Then, extract the file if it is compressed and make a copy.
     Args:
         file_path (_type_): _description_
 
@@ -165,8 +167,19 @@ def get_file_object_copy(file_path: str):
             os.rename(os.path.join(path, inside_file), os.path.join(path, file_name))
             file_name = os.path.join(path, file_name)
     elif is_gzipfile(file_path):
-        file_name: gzip.GzipFile = gzip.open(file_path, str("rt"), encoding="utf-8")
+        with gzip.open(file_path, str("rt"), encoding="utf-8") as f_in:
+            inside_file: str = file_name.split(".gz")[0]
+            file_name =  inside_file + ".copy"
+            with open(os.path.join(path, file_name), 'wt') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+                file_name = os.path.join(path, file_name)
+                compress_mode = "gz"
     else:
-        file_name = io.open(file_path, str("r"), encoding="utf-8")
+        file_name =  file_name + ".copy"
+        temp_file_name: str = os.path.join(path,"temp")
+        shutil.copy(file_path, temp_file_name)
+        new_file_name = os.path.join(path, file_name)
+        shutil.move(temp_file_name, new_file_name)
+        file_name = new_file_name
 
     return file_name, compress_mode

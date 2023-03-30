@@ -177,12 +177,20 @@ class TestGetFileObjectCopy(TestCase):
 
     def test_gz_file_case(self):
         file: str = os.path.join(
-            os.path.dirname(__file__), "files", "2021-06-30.bip.gz"
+            os.path.dirname(__file__), "files", "2021-05-30.bip.gz"
         )
-        opened_file = get_file_object_copy(file)
-        self.assertIsNotNone(opened_file)
+        expected_compress_mode: str = "gz"
+        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip.copy")
+        opened_file, compress_mode = get_file_object_copy(file)
+        self.assertEqual(expected_file, opened_file)
+        self.assertEqual(expected_compress_mode, compress_mode)
+        os.remove(expected_file)
 
     def test_file_case(self):
-        file: str = os.path.join(os.path.dirname(__file__), "files", "2021-06-30.bip")
-        opened_file = get_file_object_copy(file)
-        self.assertIsNotNone(opened_file)
+        file: str = os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip")
+        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip.copy")
+        expected_compress_mode: str = ""
+        opened_file, compress_mode = get_file_object_copy(file)
+        self.assertEqual(expected_file, opened_file)
+        self.assertEqual(expected_compress_mode, compress_mode)
+        os.remove(expected_file)
