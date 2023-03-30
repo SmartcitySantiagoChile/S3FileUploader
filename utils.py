@@ -146,14 +146,14 @@ def is_gzipfile(file_path: str) -> bool:
             return False
 
 
-def get_file_object_copy(file_path: str):
+def get_file_object(file_path: str):
     """This function is designed to open a file in one of three possible formats: gzip, zip, or no compressed.
       Then, extract the file if it is compressed and make a copy.
     Args:
-        file_path (_type_): _description_
+        file_path (_type_): File path to the object to copy
 
     Returns:
-        str: Return the filepath of the copy.
+        str: Return the filepath of the copy and the compress type
     """
     compress_mode: str = ""
     file_name: str = os.path.basename(file_path)
@@ -162,24 +162,16 @@ def get_file_object_copy(file_path: str):
         with zipfile.ZipFile(file_path, "r") as zip_file:
             zip_file.extractall(path=path)
             inside_file: str = file_name.split(".zip")[0]
-            file_name =  inside_file + ".copy"
             compress_mode = "zip"
-            os.rename(os.path.join(path, inside_file), os.path.join(path, file_name))
-            file_name = os.path.join(path, file_name)
+            file_name = os.path.join(path, inside_file)
     elif is_gzipfile(file_path):
         with gzip.open(file_path, str("rt"), encoding="utf-8") as f_in:
-            inside_file: str = file_name.split(".gz")[0]
-            file_name =  inside_file + ".copy"
-            with open(os.path.join(path, file_name), 'wt') as f_out:
+            inside_file: str = file_name.split(".gz")[0] 
+            with open(os.path.join(path, inside_file), 'wt') as f_out:
                 shutil.copyfileobj(f_in, f_out)
-                file_name = os.path.join(path, file_name)
+                file_name = os.path.join(path, inside_file)
                 compress_mode = "gz"
     else:
-        file_name =  file_name + ".copy"
-        temp_file_name: str = os.path.join(path,"temp")
-        shutil.copy(file_path, temp_file_name)
-        new_file_name = os.path.join(path, file_name)
-        shutil.move(temp_file_name, new_file_name)
-        file_name = new_file_name
+        file_name = file_path
 
     return file_name, compress_mode
