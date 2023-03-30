@@ -5,7 +5,7 @@ from utils import (
     valid_date,
     get_date_list_between_two_given_dates,
     update_file_by_tuples,
-    retrieve_objects_with_extension_pattern,
+    retrieve_objects_with_pattern,
 )
 import datetime
 import argparse
@@ -106,34 +106,37 @@ class TestUpdateFileByTuples(TestCase):
 
 class TestRetrieveObjectsWithPattern(TestCase):
     def test_not_matched_case(self):
-        extension_pattern = ".trip*"
+        pattern = "*.trip*"
         aws_object_list: list[dict[str, str]] = [
             {"name": "example.bip"},
             {"name": "example2.bip"},
             {"name": "example3.bip"},
         ]
-        self.assertEqual([],
-            retrieve_objects_with_extension_pattern(extension_pattern, aws_object_list)
+        self.assertEqual(
+            [],
+            retrieve_objects_with_pattern(pattern, aws_object_list),
         )
 
     def test_matched_case(self):
-        extension_pattern = ".bip*"
+        pattern = "*.bip*"
         aws_object_list: list[dict[str, str]] = [
             {"name": "example.bip"},
             {"name": "example2.bip"},
             {"name": "example3.bip"},
         ]
-        self.assertEqual(["example.bip", "example2.bip", "example3.bip"],
-            retrieve_objects_with_extension_pattern(extension_pattern, aws_object_list)
+        self.assertEqual(
+            ["example.bip", "example2.bip", "example3.bip"],
+            retrieve_objects_with_pattern(pattern, aws_object_list),
         )
 
     def test_matched_case_for_gz_and_zip(self):
-        extension_pattern = ".bip*"
+        pattern = "example.bip*"
         aws_object_list: list[dict[str, str]] = [
             {"name": "example.bip"},
-            {"name": "example2.bip.gz"},
-            {"name": "example3.bip.zip"},
+            {"name": "example.bip.gz"},
+            {"name": "example.bip.zip"},
         ]
-        self.assertEqual(["example.bip", "example2.bip.gz", "example3.bip.zip"],
-            retrieve_objects_with_extension_pattern(extension_pattern, aws_object_list)
+        self.assertEqual(
+            ["example.bip", "example.bip.gz", "example.bip.zip"],
+            retrieve_objects_with_pattern(pattern, aws_object_list),
         )
