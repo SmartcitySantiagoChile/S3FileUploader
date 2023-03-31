@@ -1,3 +1,4 @@
+import datetime
 from unittest import TestCase
 from unittest import mock
 
@@ -170,3 +171,18 @@ class AwsTest(TestCase):
         self.aws_session.check_file_exists = mock.MagicMock(return_value=False)
         self.aws_session.move_files_from_bucket_to_bucket(source_bucket_name, target_bucket_name, datafiles,
                                                           extension_list)
+
+    @mock.patch('aws.get_file_object')
+    @mock.patch('aws.retrieve_objects_with_pattern')
+    def test_update_files_from_bucket(self, retrieve_objects_with_pattern, get_file_object):
+        date_list: list = [datetime.datetime(2021,5,30), datetime.datetime(2021,6,29)]
+        bucket_name: str = "adatrap-bip123"
+        extension: str = '.bip*'
+        tuples_list: list = [["1","2", "3"]]
+        destination_path: str = ""
+        obj_list = [{"name":"2021-05-30.bip"},{"name": "2021-06-29.bip.gz"}]
+        get_file_object.return_value = mock.MagicMock()
+        retrieve_objects_with_pattern.return_value =mock.MagicMock()
+        self.aws_session.retrieve_obj_list = mock.MagicMock(return_value=obj_list)
+        self.aws_session.download_object_from_bucket = mock.MagicMock()
+        self.aws_session.update_files_from_bucket(date_list, bucket_name, extension, tuples_list, destination_path,)
