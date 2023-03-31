@@ -45,7 +45,7 @@ def main(argv):
 
     parser.add_argument(
         "tuples",
-        help="3-Tuples of values to be replaced on the files. Example: [0,2,3] [2,METRO,BUS]",
+        help='3-Tuples of values to be replaced on the files, must be in quotes and the elements without separation. Example: "[0,2,3] [2,METRO,BUS]"',
         type=valid_three_tuple_list,
     )
     parser.add_argument(
