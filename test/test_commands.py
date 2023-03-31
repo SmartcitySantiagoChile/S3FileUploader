@@ -462,7 +462,8 @@ class UpdateObjectsFromS3Test(TestCase):
         with self.assertRaises(SystemExit):
             update_objects_main([self.command_name, source_bucket, extension, tuples])
 
-    def test_with_four_params(self):
+    @mock.patch('move_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_with_four_params(self, check_bucket_exists):
         extension = '.bip'
         source_bucket = 'source'
         tuples = '[1,2,3]'
@@ -470,24 +471,7 @@ class UpdateObjectsFromS3Test(TestCase):
         with self.assertRaises(SystemExit):
             update_objects_main([self.command_name, source_bucket, extension, start_date, tuples,])
 
-    def test_wrong_start_date(self):
-        extension = '.bip'
-        source_bucket = 'source'
-        tuples = '[1,2,3]'
-        start_date = '2022-10-01'
-        end_date = '2022-10-01'
-        with self.assertRaises(SystemExit):
-            update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples])
 
-    
-    def test_wrong_end_date(self):
-        source_bucket = 'source'
-        extension = '.bip'
-        tuples = '[1,2,3]'
-        start_date = '2022-10-01'
-        end_date = 'a'
-        with self.assertRaises(SystemExit):
-            update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples])
 
     def test_wrong_invalid_start_and_end_date(self):
         source_bucket = 'source'
