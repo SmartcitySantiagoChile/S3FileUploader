@@ -186,10 +186,10 @@ class AWSSession:
         date_list: list,
         bucket_name: str,
         extension: str,
-        object_list: list,
         tuples_list: list,
         destination_path: str,
     ) -> None:
+        object_list: list = self.retrieve_obj_list(bucket_name)
         for datafile in date_list:
             data_filename_date: str = datafile.strftime("%Y-%m-%d")
             data_filename_pattern: str = f"{data_filename_date}{extension}"

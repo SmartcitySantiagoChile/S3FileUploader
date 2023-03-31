@@ -81,11 +81,8 @@ def main(argv):
 
     logger.info(f"Bucket name: {bucket_name} ...")
 
-    # Get all objects from bucket
-    object_list: list = aws_session.retrieve_obj_list(bucket_name)
-
     aws_session.update_files_from_bucket(
-        date_list, bucket_name, extension, object_list, tuples_list, destination_path
+        date_list, bucket_name, extension, tuples_list, destination_path
     )
 
 

@@ -10,7 +10,7 @@ from delete_object_in_s3 import main as delete_main
 from download_from_s3 import main as download_main
 from move_bucket_from_s3 import main as move_bucket_main
 from upload_to_s3 import main as upload_main
-
+from update_objects_from_s3 import main as update_objects_main
 
 class DeleteObjectTest(TestCase):
 
@@ -433,3 +433,100 @@ class MoveBucketTest(TestCase):
 
         move_files_from_bucket_to_bucket.assert_called_once()
         move_files_from_bucket_to_bucket.assert_called_with(source, target, None, None)
+
+
+class UpdateObjectsFromS3Test(TestCase):
+    def setUp(self):
+        self.command_name = 'update_objects_from_s3'
+
+    def test_without_params(self):
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name])
+
+
+    def test_with_one_param(self):        
+        source_bucket = 'source'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket])
+
+    def test_with_two_params(self):
+        extension = '.bip'
+        source_bucket = 'source'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension])
+
+    def test_with_three_params(self):
+        extension = 'bip'
+        source_bucket = 'source'
+        tuples = '[1,2,3]'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension, tuples])
+
+    def test_with_four_params(self):
+        extension = '.bip'
+        source_bucket = 'source'
+        tuples = '[1,2,3]'
+        start_date = '2022-10-01'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension, start_date, tuples,])
+
+    def test_wrong_start_date(self):
+        extension = '.bip'
+        source_bucket = 'source'
+        tuples = '[1,2,3]'
+        start_date = '2022-10-01'
+        end_date = '2022-10-01'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples])
+
+    
+    def test_wrong_end_date(self):
+        source_bucket = 'source'
+        extension = '.bip'
+        tuples = '[1,2,3]'
+        start_date = '2022-10-01'
+        end_date = 'a'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples])
+
+    def test_wrong_invalid_start_and_end_date(self):
+        source_bucket = 'source'
+        extension = '.bip'
+        tuples = '[1,2,3]'
+        start_date = '2022-10-01'
+        end_date = '2022-09-01'
+        with self.assertRaises(ValueError):
+            update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples])
+            
+
+    @mock.patch('move_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_with_bucket_does_not_exist(self, check_bucket_exist):
+        check_bucket_exist.return_value = False
+        source_bucket = 'source'
+        tuples = '[1,2,3]'
+        extension = 'bip'
+        start_date = '2022-10-01'
+        end_date = '2022-10-01'
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples])
+
+    def test_wrong_destination_path(self):
+        source_bucket = 'source'
+        extension = '.bip'
+        tuples = '[1,2,3]'
+        start_date = '2022-10-01'
+        end_date = '2022-10-01'
+        destination_path = "inexistent_destination_path"
+        with self.assertRaises(SystemExit):
+            update_objects_main([self.command_name, source_bucket, extension,start_date, end_date, tuples,  "--destination_path", destination_path])
+
+    @mock.patch('update_objects_from_s3.AWSSession.update_files_from_bucket')
+    @mock.patch('move_bucket_from_s3.AWSSession.check_bucket_exists')
+    def test_with_bucket_does_not_exist(self, check_bucket_exist, update_files_from_bucket):
+        check_bucket_exist.return_value = True
+        source_bucket = 'source'
+        tuples = '[1,2,3]'
+        extension = 'bip'
+        start_date = '2022-10-01'
+        end_date = '2022-10-01'
+        self.assertIsNone(update_objects_main([self.command_name, source_bucket, extension, start_date, end_date, tuples]))

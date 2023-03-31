@@ -8,7 +8,7 @@ from utils import (
     retrieve_objects_with_pattern,
     valid_three_tuple_list,
     is_gzipfile,
-    get_file_object_copy,
+    get_file_object,
 )
 import datetime
 import argparse
@@ -163,14 +163,14 @@ class TestIsGzipFile(TestCase):
         self.assertTrue(is_gzipfile(file))
 
 
-class TestGetFileObjectCopy(TestCase):
+class TestGetFileObject(TestCase):
     def test_zip_file_case(self):
         file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-05-30.bip.zip"
         )
-        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip.copy")
+        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip")
         expected_compress_mode: str = "zip"
-        opened_file, compress_mode = get_file_object_copy(file)
+        opened_file, compress_mode = get_file_object(file)
         self.assertEqual(expected_file, opened_file)
         self.assertEqual(expected_compress_mode, compress_mode)
         os.remove(expected_file)
@@ -180,17 +180,16 @@ class TestGetFileObjectCopy(TestCase):
             os.path.dirname(__file__), "files", "2021-05-30.bip.gz"
         )
         expected_compress_mode: str = "gz"
-        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip.copy")
-        opened_file, compress_mode = get_file_object_copy(file)
+        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip")
+        opened_file, compress_mode = get_file_object(file)
         self.assertEqual(expected_file, opened_file)
         self.assertEqual(expected_compress_mode, compress_mode)
         os.remove(expected_file)
 
     def test_file_case(self):
         file: str = os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip")
-        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip.copy")
+        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip")
         expected_compress_mode: str = ""
-        opened_file, compress_mode = get_file_object_copy(file)
+        opened_file, compress_mode = get_file_object(file)
         self.assertEqual(expected_file, opened_file)
         self.assertEqual(expected_compress_mode, compress_mode)
-        os.remove(expected_file)
