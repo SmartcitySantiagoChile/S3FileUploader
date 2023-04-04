@@ -213,7 +213,7 @@ class AWSSession:
                         )
                         # Extract and make copy
                         uncompress_filename, compress_type = get_file_object(filename)
-                        # Rename the old files
+                        # Rename the copy
                         self.logger.info(
                             f"Object '{os.path.basename(filename)}' renamed to '{os.path.basename(filename)}.old-version'..."
                         )
@@ -233,37 +233,46 @@ class AWSSession:
                             tuples_list,
                         )
                         # Check if it was a compressed file
+                        uncompress_filename_basename: str = os.path.basename(
+                            uncompress_filename
+                        )
+
+                        # Case is not compressed file
+                        compress_filename: str = uncompress_filename
+                        compress_filename_basename: str = uncompress_filename_basename
+
                         if compress_type == "zip":
-                            self.logger.info(
-                                f"Compressing object {os.path.basename(uncompress_filename)} to {os.path.basename(uncompress_filename)}.zip ..."
+                            # Update compressed filenames
+                            compress_filename = f"{uncompress_filename}.zip"
+                            compress_filename_basename = os.path.basename(
+                                compress_filename
                             )
+                            self.logger.info(
+                                f"Compressing object {uncompress_filename_basename} to {compress_filename_basename} ..."
+                            )
+                            # Compress file
                             with zipfile.ZipFile(
                                 filename, "w", zipfile.ZIP_DEFLATED
                             ) as zipf:
                                 zipf.write(
                                     uncompress_filename,
-                                    os.path.basename(uncompress_filename),
+                                    uncompress_filename_basename,
                                 )
-                            self.logger.info(
-                                f"Removing object {os.path.basename(uncompress_filename)} ..."
-                            )
-                            os.remove(uncompress_filename)
-                            self.logger.info(
-                                f"Uploading object {os.path.basename(uncompress_filename)}.zip ..."
-                            )
-                            self.send_file_to_bucket(
-                                uncompress_filename + ".zip",
-                                os.path.basename(uncompress_filename) + ".zip",
-                                bucket_name,
-                            )
+                            # Remove extracted copy
                             os.remove(uncompress_filename + ".old-version")
-                            os.remove(uncompress_filename)+ ".zip"
                         elif compress_type == "gz":
-                            self.logger.info(
-                                f"Compressing object {os.path.basename(uncompress_filename)} to {os.path.basename(uncompress_filename)}.gz ..."
+                            # Update compressed filenames
+                            compress_filename = f"{uncompress_filename}.gz"
+                            compress_filename_basename = os.path.basename(
+                                compress_filename
                             )
+
+                            self.logger.info(
+                                f"Compressing object {uncompress_filename_basename} to {compress_filename_basename} ..."
+                            )
+                            # Compress file
                             with open(uncompress_filename, "rb") as f_in, gzip.open(
-                                uncompress_filename + ".gz", "wb"
+                                compress_filename, "wb"
                             ) as f_out:
                                 buffer_size = 65536
                                 while True:
@@ -271,36 +280,26 @@ class AWSSession:
                                     if not buffer:
                                         break
                                     f_out.write(buffer)
+                            # Remove extracted copy
                             self.logger.info(
-                                f"Removing object {os.path.basename(uncompress_filename)} ..."
-                            )
-                            os.remove(uncompress_filename)
-                            self.logger.info(
-                                f"Uploading object {os.path.basename(uncompress_filename)}.gz ..."
-                            )
-                            self.send_file_to_bucket(
-                                uncompress_filename + ".gz",
-                                os.path.basename(uncompress_filename) + ".gz",
-                                bucket_name,
-                            )
-                            # Remove the copy
-                            self.logger.info(
-                                f"Removing object {os.path.basename(uncompress_filename)}.old-version ..."
+                                f"Removing object {uncompress_filename_basename}.old-version ..."
                             )
                             os.remove(uncompress_filename + ".old-version")
-                            os.remove(uncompress_filename + ".gz")
-                        else:
-                            self.logger.info(
-                                f"Uploading object {os.path.basename(uncompress_filename)} ..."
-                            )
-                            self.send_file_to_bucket(
-                                uncompress_filename,
-                                os.path.basename(uncompress_filename),
-                                bucket_name,
-                            )
-                            os.remove(uncompress_filename)
+
                         self.logger.info(
-                            f"Object {os.path.basename(uncompress_filename)} uploaded succesfully ..."
+                            f"Uploading object {compress_filename_basename} ..."
+                        )
+                        self.send_file_to_bucket(
+                            compress_filename,
+                            compress_filename_basename,
+                            bucket_name,
+                        )
+                        self.logger.info(
+                            f"Removing object {compress_filename_basename} ..."
+                        )
+                        os.remove(compress_filename)
+                        self.logger.info(
+                            f"Object {uncompress_filename_basename} uploaded succesfully ..."
                         )
 
                     except ClientError as e:
