@@ -120,11 +120,11 @@ def update_file_by_tuples(
         reader: csv.reader = csv.reader(input_file, delimiter=delimiter)
         writer: csv.writer = csv.writer(output_file, delimiter=delimiter)
         for row in reader:
-            for tuple_list in tuples:
-                if int(tuple_list[0]) < len(row) and row[int(tuple_list[0])] == str(
-                    tuple_list[1]
+            for column_index, previous_value, new_value in tuples:
+                if int(column_index) < len(row) and row[int(column_index)] == str(
+                    previous_value
                 ):
-                    row[int(tuple_list[0])] = tuple_list[2]
+                    row[int(column_index)] = new_value
 
             writer.writerow(row)
 
