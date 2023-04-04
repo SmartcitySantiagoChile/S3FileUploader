@@ -195,8 +195,8 @@ El primer parámetro es el bucket desde donde se actualizarán los archivos.
 El segundo parámetro es la extensión del bucket, puede ser un patrón. Ej: .bip* o .trip.gz.
 El tercer parámetro es la fecha inicial en formato YY-MM-DD. Ej: 2022-06-30.
 El cuarto parámetro es la fecha final en formato YY-MM-DD. Ej: 2022-07-10.
-El quinto parámetro es un listado de 3-tuplas para reemplazar valores en objectos, deben estar entre comillas y sin espacio entre los elementos de las tuplas. Ej: "[0, 2, 3] [8, LABORAL, FERIADO]"
-El parámetro opcional directorio  permite definir un directorio para almacenar las versiones locales de los archivos sin modificar. Ej: --destination-path data
+El quinto parámetro es un listado de 3-tuplas para reemplazar valores en objectos, deben estar entre comillas y sin espacio entre los elementos de las tuplas. Ej: "[0,2,3] [8,LABORAL,FERIADO]"
+El parámetro opcional directorio permite definir un directorio para almacenar las versiones locales de los archivos sin modificar. Ej: --destination-path data. En caso de no definirlo, los archivos locales se almacenaran en la misma carpeta del proyecto S3FileUploader.
 
 #### Ayuda 
 ```
