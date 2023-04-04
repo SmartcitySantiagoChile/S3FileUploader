@@ -184,4 +184,40 @@ optional arguments:
 
 
 ```
- 
+
+
+### Comando update_objets_from_s3.py
+```
+python move_objets_from_s3.py bucket extension fecha_inicial fecha_final tuplas --destination-path directorio 
+```
+
+El primer parámetro es el bucket desde donde se actualizarán los archivos.
+El segundo parámetro es la extensión del bucket, puede ser un patrón. Ej: .bip* o .trip.gz.
+El tercer parámetro es la fecha inicial en formato YY-MM-DD. Ej: 2022-06-30.
+El cuarto parámetro es la fecha final en formato YY-MM-DD. Ej: 2022-07-10.
+El quinto parámetro es un listado de 3-tuplas para reemplazar valores en objectos, deben estar entre comillas y sin espacio entre los elementos de las tuplas. Ej: "[0,2,3] [8,LABORAL,FERIADO]"
+El parámetro opcional directorio permite definir un directorio para almacenar las versiones locales de los archivos sin modificar. Ej: --destination-path data. En caso de no definirlo, los archivos locales se almacenaran en la misma carpeta del proyecto S3FileUploader.
+
+#### Ayuda 
+```
+usage: update_objects_from_s3.py [-h] [--destination-path DESTINATION_PATH]
+                                 bucket extension start_date end_date tuples
+
+update one or more objects from S3 bucket
+
+positional arguments:
+  bucket                bucket name
+  extension             Object bucket files extension, can be a pattern.
+                        Example: .bip*
+  start_date            End date to process in YYYY-MM-DD format .
+  end_date              Start date to process in YYYY-MM-DD format .
+  tuples                3-Tuples of values to be replaced on the files, must
+                        be in quotes and the elements without separation.
+                        Example: "[0,2,3] [2,METRO,BUS]"
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --destination-path DESTINATION_PATH
+                        path where files will be saved, if it is not provided
+                        we will use current path
+```
