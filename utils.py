@@ -166,8 +166,8 @@ def get_file_object(file_path: str):
             file_name = os.path.join(path, inside_file)
     elif is_gzipfile(file_path):
         with gzip.open(file_path, str("rt"), encoding="utf-8") as f_in:
-            inside_file: str = file_name.split(".gz")[0] 
-            with open(os.path.join(path, inside_file), 'wt') as f_out:
+            inside_file: str = file_name.split(".gz")[0]
+            with open(os.path.join(path, inside_file), "wt") as f_out:
                 shutil.copyfileobj(f_in, f_out)
                 file_name = os.path.join(path, inside_file)
                 compress_mode = "gz"
