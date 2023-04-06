@@ -10,6 +10,7 @@ from utils import (
     is_gzipfile,
     get_file_object,
     valid_four_tuple_list_with_comparator,
+    retrieve_values_by_tuples
 )
 import datetime
 import argparse
@@ -240,5 +241,55 @@ class TestValidFourTupleList(TestCase):
         expected_result: list = [["1", "2", "eq", "4"], ["1", "2", "gt", "4"]]
         self.assertEqual(
             valid_four_tuple_list_with_comparator(valid_list),
+            expected_result,
+        )
+
+class TestRetrieveValuesByTuples(TestCase):
+
+    def test_not_valid_comaparator(self):
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-06-30.bip"
+        )
+        tuples: list = [["1", "2", ">", "4"]]
+        with self.assertRaises(ValueError):
+            retrieve_values_by_tuples(input_file, tuples)
+    
+    def test_equal_case(self):
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-06-30.bip"
+        )
+        tuples: list = [["0", "3", "eq", "2"]]
+        expected_result: dict[str, list[str]] =  {
+            'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958']
+        }
+        self.assertEqual(
+            retrieve_values_by_tuples(input_file, tuples),
+            expected_result,
+        )
+
+
+    def test_greater_than_case(self):
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-06-30.bip"
+        )
+        tuples: list = [["0", "3", "gt", "4"]]
+        expected_result: dict[str, list[str]] =  {
+            'id': ['3540351118', '1065810690', '3886439394', ]
+        }
+        self.assertEqual(
+            retrieve_values_by_tuples(input_file, tuples),
+            expected_result,
+        )
+
+    def test_less_than_case(self):
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-06-30.bip"
+        )
+        tuples: list = [["0", "3", "lt", "4"]]
+        expected_result: dict[str, list[str]] =  {
+            'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958']
+        }
+        self.assertEqual(
+            retrieve_values_by_tuples(input_file, tuples),
             expected_result,
         )

@@ -7,6 +7,7 @@ import os
 import shutil
 import zipfile
 import gzip
+from collections import defaultdict
 
 
 def valid_date(s: str) -> datetime.date:
@@ -219,3 +220,49 @@ def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
         except ValueError:
             raise argparse.ArgumentTypeError(f"Malformed input: {four_tuple_string}")
     return four_tuple_list
+
+
+def retrieve_values_by_tuples(input_file_name: str, tuples_list: list, delimiter="|") -> dict:
+    """This function check a file and return all uniques columns values based on tuples_list filter
+
+    Args:
+        input_file_name (str): the file input.
+        tuples_list (list): a list of filters on format [index_to_retrieve, index_to_check, comparator, value_comparator].
+        delimiter (str, optional): Csv delimiter. Defaults to "|".
+
+    Returns:
+        dict: a dict with format {name: [retrieve_value_0, retrieve_value_1, ... , retrieve_value_n]}
+    """
+
+    with open(input_file_name, "r") as input_file:
+        reader: csv.reader = csv.reader(input_file, delimiter=delimiter)
+        retrieve_values: dict = defaultdict(list)
+        ## Read first row of reader
+        first_row: list = next(reader)
+        for row in reader:
+            for column_index, column_to_check, comparator, value_comparator in tuples_list:
+                if int(column_index) < len(row) and int(column_to_check) < len(row):
+                    if str(comparator) == "eq":
+                        if row[int(column_to_check)] == str(value_comparator):
+                            if row[int(column_index)] not in retrieve_values.get(first_row[int(column_index)], []):
+                                retrieve_values[first_row[int(column_index)]].append(
+                                    row[int(column_index)]
+                                )
+                    elif str(comparator) == "gt":
+                        if row[int(column_to_check)] > str(value_comparator):
+                            if row[int(column_index)] not in retrieve_values.get(first_row[int(column_index)], []):
+                                retrieve_values[first_row[int(column_index)]].append(
+                                    row[int(column_index)]
+                                )
+                    elif str(comparator) == "lt":
+                        if row[int(column_to_check)] < str(value_comparator):
+                            if row[int(column_index)] not in retrieve_values.get(first_row[int(column_index)], []):
+                                retrieve_values[first_row[int(column_index)]].append(
+                                    row[int(column_index)]
+                                )
+                    else:
+                        raise ValueError(
+                            f"Comparator {comparator} is not valid. Valid comparators are: eq, gt, lt"
+                        )                
+    return retrieve_values
+
