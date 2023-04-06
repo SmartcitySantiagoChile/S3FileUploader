@@ -246,7 +246,7 @@ class TestValidFourTupleList(TestCase):
 
 class TestRetrieveValuesByTuples(TestCase):
 
-    def test_not_valid_comaparator(self):
+    def test_not_valid_comparator(self):
         input_file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-06-30.bip"
         )
@@ -288,6 +288,19 @@ class TestRetrieveValuesByTuples(TestCase):
         tuples: list = [["0", "3", "lt", "4"]]
         expected_result: dict[str, list[str]] =  {
             'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958']
+        }
+        self.assertEqual(
+            retrieve_values_by_tuples(input_file, tuples),
+            expected_result,
+        )
+
+    def test__more_than_one_comparator_case(self):
+        input_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-06-30.bip"
+        )
+        tuples: list = [["0", "3", "eq", "2"], ["0", "3", "gt", "4"]]
+        expected_result: dict[str, list[str]] =  {
+            'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958', '3540351118', '1065810690', '3886439394']
         }
         self.assertEqual(
             retrieve_values_by_tuples(input_file, tuples),
