@@ -9,6 +9,7 @@ from utils import (
     valid_three_tuple_list,
     is_gzipfile,
     get_file_object,
+    valid_four_tuple_list_with_comparator,
 )
 import datetime
 import argparse
@@ -168,7 +169,9 @@ class TestGetFileObject(TestCase):
         file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-05-30.bip.zip"
         )
-        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip")
+        expected_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-05-30.bip"
+        )
         expected_compress_mode: str = "zip"
         opened_file, compress_mode = get_file_object(file)
         self.assertEqual(expected_file, opened_file)
@@ -180,7 +183,9 @@ class TestGetFileObject(TestCase):
             os.path.dirname(__file__), "files", "2021-05-30.bip.gz"
         )
         expected_compress_mode: str = "gz"
-        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-05-30.bip")
+        expected_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-05-30.bip"
+        )
         opened_file, compress_mode = get_file_object(file)
         self.assertEqual(expected_file, opened_file)
         self.assertEqual(expected_compress_mode, compress_mode)
@@ -188,8 +193,52 @@ class TestGetFileObject(TestCase):
 
     def test_file_case(self):
         file: str = os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip")
-        expected_file: str =  os.path.join(os.path.dirname(__file__), "files", "2021-06-29.bip")
+        expected_file: str = os.path.join(
+            os.path.dirname(__file__), "files", "2021-06-29.bip"
+        )
         expected_compress_mode: str = ""
         opened_file, compress_mode = get_file_object(file)
         self.assertEqual(expected_file, opened_file)
         self.assertEqual(expected_compress_mode, compress_mode)
+
+
+class TestValidFourTupleList(TestCase):
+    def test_four_tuple_list_length_not_valid(self):
+        not_valid_list: str = "[1]"
+        with self.assertRaises(argparse.ArgumentTypeError):
+            valid_four_tuple_list_with_comparator(not_valid_list)
+
+    def test_four_tuple_list_not_valid(self):
+        not_valid_list: str = "[1,2,3,4,5]"
+        with self.assertRaises(argparse.ArgumentTypeError):
+            valid_four_tuple_list_with_comparator(not_valid_list)
+
+    def test_not_digit_on_first_index(self):
+        not_valid_list: str = "[a,2,3,4]"
+        with self.assertRaises(argparse.ArgumentTypeError):
+            valid_four_tuple_list_with_comparator(not_valid_list)
+
+    def test_not_digit_on_second_index(self):
+        not_valid_list: str = "[1,b,3,4]"
+        with self.assertRaises(argparse.ArgumentTypeError):
+            valid_four_tuple_list_with_comparator(not_valid_list)
+
+    def test_not_valid_comparator_on_third_index(self):
+        not_valid_list: str = "[1,2,>,4]"
+        with self.assertRaises(argparse.ArgumentTypeError):
+            valid_four_tuple_list_with_comparator(not_valid_list)
+
+    def test_four_tuple_list_valid(self):
+        valid_list: str = "[1,2,3,4]"
+        self.assertEqual(
+            valid_four_tuple_list_with_comparator(valid_list),
+            [["1", "2", "3", "4"]],
+        )
+
+    def test_valid_list_of_lists(self):
+        valid_list: str = "[1,2,eq,4] [1,2,gt,4]"
+        expected_result: list = [["1", "2", "eq", "4"], ["1", "2", "gt", "4"]]
+        self.assertEqual(
+            valid_four_tuple_list_with_comparator(valid_list),
+            expected_result,
+        )

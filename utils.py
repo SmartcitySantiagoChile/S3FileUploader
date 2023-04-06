@@ -175,3 +175,47 @@ def get_file_object(file_path: str):
         file_name = file_path
 
     return file_name, compress_mode
+
+
+def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
+    """This is a function that validate a n list with the format [a,b,c,d] ... [w,x,y,z].
+
+    Args:
+        tuple_list (str): A string that represents a four tuple list
+
+    Raises:
+        ValueError: Raise this error in case of malformed tuple_list
+
+    Returns:
+        list: A formatted three tuple list
+    """
+    split_tuple_list: list = tuple_list.split()
+    four_tuple_list: list = []
+    valid_comparators: list = ["eq", "gt", "lt"]
+    for four_tuple_string in split_tuple_list:
+        try:
+            four_tuple: list = [x for x in four_tuple_string.strip("[]").split(",")]
+            if len(four_tuple) != 4:
+                raise argparse.ArgumentTypeError(
+                    f"Malformed input: {four_tuple_string}. Must be a n tuple with n = 4. Check if the string has wrong spaces."
+                )
+            if len(four_tuple) and not four_tuple[0].isnumeric():
+                raise argparse.ArgumentTypeError(
+                    f"Malformed input: {four_tuple_string}. The first element must be a digit."
+                )
+        
+            if len(four_tuple) and not four_tuple[1].isnumeric():
+                raise argparse.ArgumentTypeError(
+                    f"Malformed input: {four_tuple_string}. The second element must be a digit."
+                )
+
+            if len(four_tuple) and four_tuple[2] not in valid_comparators:
+                raise argparse.ArgumentTypeError(
+                    f"Malformed input: {four_tuple_string}. The third element must be one of the following: {valid_comparators}."
+                )
+            
+            four_tuple_list.append(four_tuple)
+
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"Malformed input: {four_tuple_string}")
+    return four_tuple_list
