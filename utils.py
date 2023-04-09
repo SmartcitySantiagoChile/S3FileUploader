@@ -182,13 +182,13 @@ def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
     """This is a function that validate a n list with the format [a,b,c,d] ... [w,x,y,z].
 
     Args:
-        tuple_list (str): A string that represents a four tuple list
+        tuple_list (str): A string that represents a four tuple list.
 
     Raises:
-        ValueError: Raise this error in case of malformed tuple_list
+        ValueError: Raise this error in case of malformed tuple_list.
 
     Returns:
-        list: A formatted three tuple list
+        list: A formatted three tuple list.
     """
     split_tuple_list: list = tuple_list.split()
     four_tuple_list: list = []
@@ -223,7 +223,7 @@ def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
 
 
 def retrieve_values_by_tuples(input_file_name: str, tuples_list: list, delimiter="|") -> dict:
-    """This function check a file and return all uniques columns values based on tuples_list filter
+    """This function check a file and return all uniques columns values based on tuples_list filter.
 
     Args:
         input_file_name (str): the file input.
@@ -266,3 +266,36 @@ def retrieve_values_by_tuples(input_file_name: str, tuples_list: list, delimiter
                         )                
     return retrieve_values
 
+def save_dict_keys_as_csv_files(dictionary: dict, path_to_save: str = "") -> None:
+    """This function save a dict keys as csv files.
+
+    Args:
+        dictionary (dict): A dictionary with format {name: [value_0, value_1, ... , value_n]}
+        path_to_save (str): The path to save the csv files.
+    """
+    for key, values in dictionary.items():
+        with open(os.path.join(path_to_save, key + ".csv"), "w") as output_file:
+            writer: csv.writer = csv.writer(output_file, delimiter="|")
+            writer.writerow([key])
+            for value in values:
+                writer.writerow([value])
+
+def merge_two_dicts_saving_uniques_values(dict_a: dict, dict_b: dict) -> dict:
+    """This function merge two dicts and return a new dict with the union of the keys and the unique values of each key.
+
+    Args:
+        dict_a (dict): A dictionary with format {name: [value_0, value_1, ... , value_n]}
+        dict_b (dict): A dictionary with format {name: [value_0, value_1, ... , value_n]}
+
+    Returns:
+        dict: A dictionary with format {name: [value_0, value_1, ... , value_n]}
+    """
+    merged_dict: dict = dict_a.copy()
+    for key, values in dict_b.items():
+        if key in merged_dict:
+            for value in values:
+                if value not in merged_dict[key]:
+                    merged_dict[key].append(value)
+        else:
+            merged_dict[key] = values
+    return merged_dict

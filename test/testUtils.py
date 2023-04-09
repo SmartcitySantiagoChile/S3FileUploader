@@ -10,7 +10,9 @@ from utils import (
     is_gzipfile,
     get_file_object,
     valid_four_tuple_list_with_comparator,
-    retrieve_values_by_tuples
+    retrieve_values_by_tuples,
+    save_dict_keys_as_csv_files,
+    merge_two_dicts_saving_uniques_values
 )
 import datetime
 import argparse
@@ -294,7 +296,7 @@ class TestRetrieveValuesByTuples(TestCase):
             expected_result,
         )
 
-    def test__more_than_one_comparator_case(self):
+    def test_more_than_one_comparator_case(self):
         input_file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-06-30.bip"
         )
@@ -304,5 +306,66 @@ class TestRetrieveValuesByTuples(TestCase):
         }
         self.assertEqual(
             retrieve_values_by_tuples(input_file, tuples),
+            expected_result,
+        )
+
+class TestSaveDictKeysAsCsvFiles(TestCase):
+    def test_save_dict_keys_as_csv_files(self):
+        input_dict: dict = {
+            "id": ["1", "2", "3", "4", "5"],
+            "name": ["a", "b", "c", "d", "e"],
+        }
+        expected_files: list = [
+            os.path.join(os.path.dirname(__file__),  "id.csv"),
+            os.path.join(os.path.dirname(__file__), "name.csv"),
+        ]
+        save_dict_keys_as_csv_files(input_dict, os.path.dirname(__file__))
+        for file in expected_files:
+            self.assertTrue(os.path.exists(file))
+            os.remove(file)
+            
+
+class TestMergeTwoDictsSavingUniquesValues(TestCase):
+
+    def test_empty_case(self):
+        dict1: dict = {}
+        dict2: dict = {}
+        expected_result: dict = {}
+        self.assertEqual(
+            merge_two_dicts_saving_uniques_values(dict1, dict2),
+            expected_result,
+        )
+
+    def test_all_different_values_case(self):
+        dict1: dict = {"id": ["1", "2", "3", "4", "5"]}
+        dict2: dict = {"name": ["a", "b", "c", "d", "e"]}
+        expected_result: dict = {
+            "id": ["1", "2", "3", "4", "5"],
+            "name": ["a", "b", "c", "d", "e"],
+        }
+        self.assertEqual(
+            merge_two_dicts_saving_uniques_values(dict1, dict2),
+            expected_result,
+        )
+    
+    def test_some_values_similar(self):
+        dict1: dict = {"id": ["1", "2", "4", "5"]}
+        dict2: dict = {"id": ["1", "2", "3", "6"]}
+        expected_result: dict = {
+            "id": ["1", "2", "4", "5", "3", "6"],
+        }
+        self.assertEqual(
+            merge_two_dicts_saving_uniques_values(dict1, dict2),
+            expected_result,
+        )
+
+    def test_all_values_similar(self):
+        dict1: dict = {"id": ["1", "2", "4", "5"]}
+        dict2: dict = {"id": ["1", "2", "4", "5"]}
+        expected_result: dict = {
+            "id": ["1", "2", "4", "5"],
+        }
+        self.assertEqual(
+            merge_two_dicts_saving_uniques_values(dict1, dict2),
             expected_result,
         )
