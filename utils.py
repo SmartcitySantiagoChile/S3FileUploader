@@ -281,7 +281,7 @@ def save_dict_keys_as_csv_files(dictionary: dict, path_to_save: str = "") -> Non
                 writer.writerow([value])
 
 def merge_two_dicts_saving_uniques_values(dict_a: dict, dict_b: dict) -> dict:
-    """This function merge two dicts and return a new dict with the union of the keys and the unique values of each key.
+    """This function merge two dicts and return a new sorted dict with the union of the keys and the unique values of each key.
 
     Args:
         dict_a (dict): A dictionary with format {name: [value_0, value_1, ... , value_n]}
@@ -293,9 +293,8 @@ def merge_two_dicts_saving_uniques_values(dict_a: dict, dict_b: dict) -> dict:
     merged_dict: dict = dict_a.copy()
     for key, values in dict_b.items():
         if key in merged_dict:
-            for value in values:
-                if value not in merged_dict[key]:
-                    merged_dict[key].append(value)
+            merged_dict[key] = list(set(merged_dict[key] + values))
         else:
             merged_dict[key] = values
+    merged_dict: dict = {k: sorted(merged_dict[k]) for k in merged_dict}
     return merged_dict

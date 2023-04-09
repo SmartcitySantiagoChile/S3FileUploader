@@ -352,7 +352,7 @@ class TestMergeTwoDictsSavingUniquesValues(TestCase):
         dict1: dict = {"id": ["1", "2", "4", "5"]}
         dict2: dict = {"id": ["1", "2", "3", "6"]}
         expected_result: dict = {
-            "id": ["1", "2", "4", "5", "3", "6"],
+            "id": ["1", "2", "3", "4", "5", "6"],
         }
         self.assertEqual(
             merge_two_dicts_saving_uniques_values(dict1, dict2),
