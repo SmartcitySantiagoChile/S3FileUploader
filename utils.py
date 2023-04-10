@@ -204,7 +204,7 @@ def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
                 raise argparse.ArgumentTypeError(
                     f"Malformed input: {four_tuple_string}. The first element must be a digit."
                 )
-        
+
             if len(four_tuple) and not four_tuple[1].isnumeric():
                 raise argparse.ArgumentTypeError(
                     f"Malformed input: {four_tuple_string}. The second element must be a digit."
@@ -214,7 +214,7 @@ def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
                 raise argparse.ArgumentTypeError(
                     f"Malformed input: {four_tuple_string}. The third element must be one of the following: {valid_comparators}."
                 )
-            
+
             four_tuple_list.append(four_tuple)
 
         except ValueError:
@@ -222,7 +222,9 @@ def valid_four_tuple_list_with_comparator(tuple_list: str) -> list:
     return four_tuple_list
 
 
-def retrieve_values_by_tuples(input_file_name: str, tuples_list: list, delimiter="|") -> dict:
+def retrieve_values_by_tuples(
+    input_file_name: str, tuples_list: list, delimiter="|"
+) -> dict:
     """This function check a file and return all uniques columns values based on tuples_list filter.
 
     Args:
@@ -240,31 +242,43 @@ def retrieve_values_by_tuples(input_file_name: str, tuples_list: list, delimiter
         ## Read first row of reader
         first_row: list = next(reader)
         for row in reader:
-            for column_index, column_to_check, comparator, value_comparator in tuples_list:
+            for (
+                column_index,
+                column_to_check,
+                comparator,
+                value_comparator,
+            ) in tuples_list:
                 if int(column_index) < len(row) and int(column_to_check) < len(row):
                     if str(comparator) == "eq":
                         if row[int(column_to_check)] == str(value_comparator):
-                            if row[int(column_index)] not in retrieve_values.get(first_row[int(column_index)], []):
+                            if row[int(column_index)] not in retrieve_values.get(
+                                first_row[int(column_index)], []
+                            ):
                                 retrieve_values[first_row[int(column_index)]].append(
                                     row[int(column_index)]
                                 )
                     elif str(comparator) == "gt":
                         if row[int(column_to_check)] > str(value_comparator):
-                            if row[int(column_index)] not in retrieve_values.get(first_row[int(column_index)], []):
+                            if row[int(column_index)] not in retrieve_values.get(
+                                first_row[int(column_index)], []
+                            ):
                                 retrieve_values[first_row[int(column_index)]].append(
                                     row[int(column_index)]
                                 )
                     elif str(comparator) == "lt":
                         if row[int(column_to_check)] < str(value_comparator):
-                            if row[int(column_index)] not in retrieve_values.get(first_row[int(column_index)], []):
+                            if row[int(column_index)] not in retrieve_values.get(
+                                first_row[int(column_index)], []
+                            ):
                                 retrieve_values[first_row[int(column_index)]].append(
                                     row[int(column_index)]
                                 )
                     else:
                         raise ValueError(
                             f"Comparator {comparator} is not valid. Valid comparators are: eq, gt, lt"
-                        )                
+                        )
     return retrieve_values
+
 
 def save_dict_keys_as_csv_files(dictionary: dict, path_to_save: str = "") -> None:
     """This function save a dict keys as csv files.
@@ -279,6 +293,7 @@ def save_dict_keys_as_csv_files(dictionary: dict, path_to_save: str = "") -> Non
             writer.writerow([key])
             for value in values:
                 writer.writerow([value])
+
 
 def merge_two_dicts_saving_uniques_values(dict_a: dict, dict_b: dict) -> dict:
     """This function merge two dicts and return a new sorted dict with the union of the keys and the unique values of each key.

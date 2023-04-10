@@ -8,7 +8,14 @@ import zipfile
 import boto3
 import botocore
 from decouple import config
-from utils import retrieve_objects_with_pattern, get_file_object, update_file_by_tuples, retrieve_values_by_tuples, save_dict_keys_as_csv_files, merge_two_dicts_saving_uniques_values
+from utils import (
+    retrieve_objects_with_pattern,
+    get_file_object,
+    update_file_by_tuples,
+    retrieve_values_by_tuples,
+    save_dict_keys_as_csv_files,
+    merge_two_dicts_saving_uniques_values,
+)
 from botocore.exceptions import ClientError
 
 
@@ -303,13 +310,14 @@ class AWSSession:
                         )
                         # Extract and make copy
                         uncompress_filename, compress_type = get_file_object(filename)
-                        
+
                     except ClientError as e:
                         self.logger.error(e)
             else:
                 self.logger.info(
                     f"Not object found for date '{data_filename_date}' with extension '{extension}'"
                 )
+
     def retrieve_values_from_bucket_files(
         self,
         date_list: list,
@@ -320,8 +328,8 @@ class AWSSession:
     ) -> None:
         """This method retrieves all unique attributes values of S3 objects for a given attribute, a given date list and a given bucket.
         It will only retrieve the attributes filtered by the filter_list.
-        It will save the values in multiple files, with attribute key as name and attribute values as file rows.        
-        
+        It will save the values in multiple files, with attribute key as name and attribute values as file rows.
+
         Args:
             date_list (list): A datetime list, ordered from smallest to largest.
             bucket_name (str): The bucket to search S3 objects.
@@ -329,7 +337,7 @@ class AWSSession:
             filter_list (list): A 4-tuple list with the format [index_to_retrieve, index_to_check, comparator, value_comparator].
             destination_path (str): A path where the result files will be saved.
         """
-        object_list: list = self.retrieve_obj_list(bucket_name)    
+        object_list: list = self.retrieve_obj_list(bucket_name)
         res_data_values_dict: dict = {}
         for datafile in date_list:
             data_filename_date: str = datafile.strftime("%Y-%m-%d")
@@ -356,18 +364,22 @@ class AWSSession:
                         uncompress_filename, compress_type = get_file_object(filename)
 
                         # Retrieving values
-                        self.logger.info(f"Retrieving values of {uncompress_filename} ...")                       
-                        data_values_dict: dict = retrieve_values_by_tuples(uncompress_filename,
-                                filter_list,
+                        self.logger.info(
+                            f"Retrieving values of {uncompress_filename} ..."
                         )
-                        res_data_values_dict = merge_two_dicts_saving_uniques_values(res_data_values_dict, data_values_dict)
-                        
-                        self.logger.info(f"Removing object {data_filename} ...")                       
+                        data_values_dict: dict = retrieve_values_by_tuples(
+                            uncompress_filename,
+                            filter_list,
+                        )
+                        res_data_values_dict = merge_two_dicts_saving_uniques_values(
+                            res_data_values_dict, data_values_dict
+                        )
+
+                        self.logger.info(f"Removing object {data_filename} ...")
                         # Remove files
                         if compress_type:
                             os.remove(filename)
                         os.remove(uncompress_filename)
-
 
                     except ClientError as e:
                         self.logger.error(e)
@@ -375,11 +387,12 @@ class AWSSession:
                 self.logger.info(
                     f"Not object found for date '{data_filename_date}' with extension '{extension}'"
                 )
-        
+
         # Save the result
         if not destination_path:
             destination_path = ""
         save_dict_keys_as_csv_files(res_data_values_dict, destination_path)
+
 
 def filter_by_extension(file_list: list, extension_list: list) -> list:
     """

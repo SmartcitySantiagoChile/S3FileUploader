@@ -12,7 +12,7 @@ from utils import (
     valid_four_tuple_list_with_comparator,
     retrieve_values_by_tuples,
     save_dict_keys_as_csv_files,
-    merge_two_dicts_saving_uniques_values
+    merge_two_dicts_saving_uniques_values,
 )
 import datetime
 import argparse
@@ -246,8 +246,8 @@ class TestValidFourTupleList(TestCase):
             expected_result,
         )
 
-class TestRetrieveValuesByTuples(TestCase):
 
+class TestRetrieveValuesByTuples(TestCase):
     def test_not_valid_comparator(self):
         input_file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-06-30.bip"
@@ -255,28 +255,39 @@ class TestRetrieveValuesByTuples(TestCase):
         tuples: list = [["1", "2", ">", "4"]]
         with self.assertRaises(ValueError):
             retrieve_values_by_tuples(input_file, tuples)
-    
+
     def test_equal_case(self):
         input_file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-06-30.bip"
         )
         tuples: list = [["0", "3", "eq", "2"]]
-        expected_result: dict[str, list[str]] =  {
-            'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958']
+        expected_result: dict[str, list[str]] = {
+            "id": [
+                "2249713938",
+                "4023044818",
+                "3567485646",
+                "2238178226",
+                "2582784534",
+                "2002112642",
+                "1198881958",
+            ]
         }
         self.assertEqual(
             retrieve_values_by_tuples(input_file, tuples),
             expected_result,
         )
 
-
     def test_greater_than_case(self):
         input_file: str = os.path.join(
             os.path.dirname(__file__), "files", "2021-06-30.bip"
         )
         tuples: list = [["0", "3", "gt", "4"]]
-        expected_result: dict[str, list[str]] =  {
-            'id': ['3540351118', '1065810690', '3886439394', ]
+        expected_result: dict[str, list[str]] = {
+            "id": [
+                "3540351118",
+                "1065810690",
+                "3886439394",
+            ]
         }
         self.assertEqual(
             retrieve_values_by_tuples(input_file, tuples),
@@ -288,8 +299,16 @@ class TestRetrieveValuesByTuples(TestCase):
             os.path.dirname(__file__), "files", "2021-06-30.bip"
         )
         tuples: list = [["0", "3", "lt", "4"]]
-        expected_result: dict[str, list[str]] =  {
-            'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958']
+        expected_result: dict[str, list[str]] = {
+            "id": [
+                "2249713938",
+                "4023044818",
+                "3567485646",
+                "2238178226",
+                "2582784534",
+                "2002112642",
+                "1198881958",
+            ]
         }
         self.assertEqual(
             retrieve_values_by_tuples(input_file, tuples),
@@ -301,13 +320,25 @@ class TestRetrieveValuesByTuples(TestCase):
             os.path.dirname(__file__), "files", "2021-06-30.bip"
         )
         tuples: list = [["0", "3", "eq", "2"], ["0", "3", "gt", "4"]]
-        expected_result: dict[str, list[str]] =  {
-            'id': ['2249713938', '4023044818', '3567485646', '2238178226', '2582784534', '2002112642', '1198881958', '3540351118', '1065810690', '3886439394']
+        expected_result: dict[str, list[str]] = {
+            "id": [
+                "2249713938",
+                "4023044818",
+                "3567485646",
+                "2238178226",
+                "2582784534",
+                "2002112642",
+                "1198881958",
+                "3540351118",
+                "1065810690",
+                "3886439394",
+            ]
         }
         self.assertEqual(
             retrieve_values_by_tuples(input_file, tuples),
             expected_result,
         )
+
 
 class TestSaveDictKeysAsCsvFiles(TestCase):
     def test_save_dict_keys_as_csv_files(self):
@@ -316,17 +347,16 @@ class TestSaveDictKeysAsCsvFiles(TestCase):
             "name": ["a", "b", "c", "d", "e"],
         }
         expected_files: list = [
-            os.path.join(os.path.dirname(__file__),  "id.csv"),
+            os.path.join(os.path.dirname(__file__), "id.csv"),
             os.path.join(os.path.dirname(__file__), "name.csv"),
         ]
         save_dict_keys_as_csv_files(input_dict, os.path.dirname(__file__))
         for file in expected_files:
             self.assertTrue(os.path.exists(file))
             os.remove(file)
-            
+
 
 class TestMergeTwoDictsSavingUniquesValues(TestCase):
-
     def test_empty_case(self):
         dict1: dict = {}
         dict2: dict = {}
@@ -347,7 +377,7 @@ class TestMergeTwoDictsSavingUniquesValues(TestCase):
             merge_two_dicts_saving_uniques_values(dict1, dict2),
             expected_result,
         )
-    
+
     def test_some_values_similar(self):
         dict1: dict = {"id": ["1", "2", "4", "5"]}
         dict2: dict = {"id": ["1", "2", "3", "6"]}
