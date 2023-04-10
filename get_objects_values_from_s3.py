@@ -7,7 +7,7 @@ import sys
 from utils import (
     get_date_list_between_two_given_dates,
     valid_date,
-    valid_three_tuple_list,
+    valid_four_tuple_list_with_comparator,
 )
 
 new_path: str = os.path.join(os.path.dirname(__file__), "..", "..")
@@ -18,12 +18,12 @@ from aws import AWSSession
 
 def main(argv):
     """
-    This script will update one or more objects from S3 bucket.
+    This script will retrieve all values associated with a specified column or list of columns for an S3 object.
     """
 
     # Arguments and description
     parser = argparse.ArgumentParser(
-        description="update one or more objects from S3 bucket"
+        description="will retrieve all values associated with a specified column or list of columns for an S3 object"
     )
 
     parser.add_argument("bucket", default=None, help="bucket name")
@@ -45,8 +45,8 @@ def main(argv):
 
     parser.add_argument(
         "tuples",
-        help='3-Tuples of values to be replaced on the files, must be in quotes and the elements without separation. Example: "[0,2,3] [2,METRO,BUS]"',
-        type=valid_three_tuple_list,
+        help='4-Tuples of values to be replaced on the files, must be in quotes and the elements without separation, [index-to-retrieve, index-to-check, comparator, value]. Example: "[0,2,gt,3] [2,1,eq,BUS]". Comparator list: [eq,gt,lt]',
+        type=valid_four_tuple_list_with_comparator,
     )
     parser.add_argument(
         "--destination-path",
@@ -81,7 +81,7 @@ def main(argv):
 
     logger.info(f"Bucket name: {bucket_name} ...")
 
-    aws_session.update_files_from_bucket(
+    aws_session.retrieve_values_from_bucket_files(
         date_list, bucket_name, extension, tuples_list, destination_path
     )
 
